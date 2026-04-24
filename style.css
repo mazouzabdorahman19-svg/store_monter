@@ -1,0 +1,336 @@
+:root {
+    --primary-dark: #061612;
+    --secondary-dark: #0a211b;
+    --accent-gold: #D4AF37;
+    --accent-gold-light: #F2D06B;
+    --text-white: #ffffff;
+    --text-gray: #a0a0a0;
+    --transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+}
+
+body {
+    background-color: var(--primary-dark);
+    color: var(--text-white);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+h1, h2, h3, .brand-logo {
+    font-family: 'Cormorant Garamond', serif;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--primary-dark); }
+::-webkit-scrollbar-thumb { background: var(--accent-gold); border-radius: 10px; }
+
+/* Header */
+header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 2rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    transition: var(--transition);
+}
+
+header.scrolled {
+    padding: 1rem 5%;
+    background: rgba(6, 22, 18, 0.95);
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.brand-logo {
+    font-size: 2rem;
+    color: var(--accent-gold);
+    text-decoration: none;
+    letter-spacing: 3px;
+    font-weight: 600;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 3rem;
+}
+
+.nav-menu a {
+    color: var(--text-white);
+    text-decoration: none;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: var(--transition);
+    opacity: 0.7;
+}
+
+.nav-menu a:hover {
+    color: var(--accent-gold);
+    opacity: 1;
+}
+
+/* Hero Section */
+.hero {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(rgba(6, 22, 18, 0.6), rgba(6, 22, 18, 0.8)), 
+                url('images/WhatsApp Image 2026-04-24 at 20.39.27.jpeg') center/cover no-repeat;
+    padding: 0 5%;
+    position: relative;
+}
+
+.hero-content {
+    max-width: 900px;
+    animation: fadeInUp 1.5s ease-out;
+}
+
+.hero-content h1 {
+    font-size: clamp(3rem, 8vw, 5rem);
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+    font-weight: 300;
+    letter-spacing: -1px;
+}
+
+.hero-content p {
+    font-size: 1.1rem;
+    color: var(--text-gray);
+    margin-bottom: 2.5rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.btn {
+    display: inline-block;
+    padding: 1.2rem 3rem;
+    text-decoration: none;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    transition: var(--transition);
+    border-radius: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary {
+    background: var(--accent-gold);
+    color: var(--primary-dark);
+    font-weight: 700;
+}
+
+.btn-primary:hover {
+    background: var(--text-white);
+    transform: translateY(-5px);
+}
+
+/* Bento Grid Products */
+.collection-section {
+    padding: 8rem 5%;
+}
+
+.section-intro {
+    text-align: center;
+    margin-bottom: 5rem;
+}
+
+.section-intro h2 {
+    font-size: 3rem;
+    color: var(--accent-gold);
+    margin-bottom: 1rem;
+}
+
+.section-intro p {
+    color: var(--text-gray);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 300px;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.bento-item {
+    position: relative;
+    overflow: hidden;
+    background: var(--secondary-dark);
+    border: 1px solid rgba(212, 175, 55, 0.05);
+    transition: var(--transition);
+}
+
+.bento-item.large { grid-column: span 2; grid-row: span 2; }
+.bento-item.tall { grid-row: span 2; }
+.bento-item.wide { grid-column: span 2; }
+
+.bento-item:hover {
+    border-color: var(--accent-gold);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+    transform: translateY(-10px);
+}
+
+.bento-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: brightness(0.8);
+}
+
+.bento-item:hover .bento-img {
+    transform: scale(1.1);
+    filter: brightness(1);
+}
+
+.bento-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 2.5rem;
+    background: linear-gradient(transparent, rgba(6, 22, 18, 0.95));
+    transform: translateY(20px);
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.bento-item:hover .bento-overlay {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.bento-overlay h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.bento-price {
+    color: var(--accent-gold);
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    display: block;
+}
+
+.btn-orda {
+    background: var(--accent-gold);
+    color: var(--primary-dark);
+    padding: 0.8rem 1.5rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-orda:hover {
+    background: var(--text-white);
+}
+
+/* Form Section */
+.order-section {
+    background: var(--secondary-dark);
+    padding: 8rem 5%;
+}
+
+.order-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: var(--primary-dark);
+    padding: 4rem;
+    border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.form-group {
+    margin-bottom: 2rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.8rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent-gold);
+}
+
+.form-group input, .form-group textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem 0;
+    color: var(--text-white);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.form-group input:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent-gold);
+}
+
+/* Toast */
+.cart-toast {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    background: var(--accent-gold);
+    color: var(--primary-dark);
+    padding: 1.2rem 2.5rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    z-index: 2000;
+    transform: translateX(150%);
+    transition: var(--transition);
+}
+
+.cart-toast.show {
+    transform: translateX(0);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile */
+@media (max-width: 1024px) {
+    .bento-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .nav-menu { display: none; }
+}
+
+@media (max-width: 600px) {
+    .bento-grid {
+        grid-template-columns: 1fr;
+        grid-auto-rows: 400px;
+    }
+    .bento-item.large, .bento-item.tall, .bento-item.wide {
+        grid-column: span 1;
+        grid-row: span 1;
+    }
+    .order-container {
+        padding: 2rem;
+    }
+}

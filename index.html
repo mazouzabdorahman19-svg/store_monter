@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BELLA KRAFT | Luxury Timepieces</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Style -->
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+
+    <header id="mainHeader">
+        <a href="#" class="brand-logo">BELLA KRAFT</a>
+        
+        <nav class="nav-menu">
+            <a href="#home">Home</a>
+            <a href="#collection">Collection</a>
+            <a href="#order">Order</a>
+        </nav>
+
+        <div class="menu-toggle">
+            <span></span>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" id="home">
+            <div class="hero-content">
+                <p>Excellence in Motion</p>
+                <h1>Timeless Luxury for the Modern Era</h1>
+                <a href="#collection" class="btn btn-primary">Discover Collection</a>
+            </div>
+        </section>
+
+        <!-- Collection Section (Bento Grid) -->
+        <section class="collection-section" id="collection">
+            <div class="section-intro">
+                <p>New Arrivals 2024</p>
+                <h2>Masterpiece Collection</h2>
+            </div>
+
+            <div class="bento-grid">
+                <!-- Large Item -->
+                <div class="bento-item large">
+                    <img src="images/WhatsApp Image 2026-04-24 at 20.39.13.jpeg" alt="DW Gold Square" class="bento-img">
+                    <div class="bento-overlay">
+                        <h3>DW Gold Square</h3>
+                        <span class="bento-price">950 DH</span>
+                        <button class="btn-orda" onclick="addToCart('DW Gold Square', '950 DH', this)">Add to Order</button>
+                    </div>
+                </div>
+
+                <!-- Tall Item -->
+                <div class="bento-item tall">
+                    <img src="images/WhatsApp Image 2026-04-24 at 20.39.14.jpeg" alt="Rolex Cellini" class="bento-img">
+                    <div class="bento-overlay">
+                        <h3>Rolex Cellini Gold</h3>
+                        <span class="bento-price">1800 DH</span>
+                        <button class="btn-orda" onclick="addToCart('Rolex Cellini Gold', '1800 DH', this)">Add to Order</button>
+                    </div>
+                </div>
+
+                <!-- Regular Item -->
+                <div class="bento-item">
+                    <img src="images/WhatsApp Image 2026-04-24 at 20.39.15.jpeg" alt="Rolex Diamond" class="bento-img">
+                    <div class="bento-overlay">
+                        <h3>Rolex Diamond Rose</h3>
+                        <span class="bento-price">2200 DH</span>
+                        <button class="btn-orda" onclick="addToCart('Rolex Diamond Rose', '2200 DH', this)">Add to Order</button>
+                    </div>
+                </div>
+
+                <!-- Regular Item -->
+                <div class="bento-item">
+                    <img src="images/WhatsApp Image 2026-04-24 at 20.39.19.jpeg" alt="DW Emerald" class="bento-img">
+                    <div class="bento-overlay">
+                        <h3>DW Emerald Square</h3>
+                        <span class="bento-price">1100 DH</span>
+                        <button class="btn-orda" onclick="addToCart('DW Emerald Square', '1100 DH', this)">Add to Order</button>
+                    </div>
+                </div>
+
+                <!-- Wide Item -->
+                <div class="bento-item wide">
+                    <img src="images/WhatsApp Image 2026-04-24 at 20.39.24.jpeg" alt="DW Silver" class="bento-img">
+                    <div class="bento-overlay">
+                        <h3>DW Silver Square</h3>
+                        <span class="bento-price">950 DH</span>
+                        <button class="btn-orda" onclick="addToCart('DW Silver Square', '950 DH', this)">Add to Order</button>
+                    </div>
+                </div>
+
+                <!-- Regular Item -->
+                <div class="bento-item">
+                    <img src="images/WhatsApp Image 2026-04-24 at 20.39.30.jpeg" alt="IEKE" class="bento-img">
+                    <div class="bento-overlay">
+                        <h3>IEKE World Fashion</h3>
+                        <span class="bento-price">750 DH</span>
+                        <button class="btn-orda" onclick="addToCart('IEKE World Fashion', '750 DH', this)">Add to Order</button>
+                    </div>
+                </div>
+
+                <!-- Tall Item -->
+                <div class="bento-item tall">
+                    <img src="images/WhatsApp Image 2026-04-24 at 20.39.15 (1).jpeg" alt="Rolex Oyster" class="bento-img">
+                    <div class="bento-overlay">
+                        <h3>Oyster Perpetual</h3>
+                        <span class="bento-price">2100 DH</span>
+                        <button class="btn-orda" onclick="addToCart('Rolex Oyster Perpetual', '2100 DH', this)">Add to Order</button>
+                    </div>
+                </div>
+
+                <!-- Regular Item -->
+                <div class="bento-item">
+                    <img src="images/WhatsApp Image 2026-04-24 at 20.39.15 (2).jpeg" alt="Rolex Sky" class="bento-img">
+                    <div class="bento-overlay">
+                        <h3>Rolex Sky-Dweller</h3>
+                        <span class="bento-price">2500 DH</span>
+                        <button class="btn-orda" onclick="addToCart('Rolex Sky-Dweller', '2500 DH', this)">Add to Order</button>
+                    </div>
+                </div>
+
+                <!-- Large Item -->
+                <div class="bento-item large">
+                    <img src="images/WhatsApp Image 2026-04-24 at 20.39.18.jpeg" alt="Rolex Cosmograph" class="bento-img">
+                    <div class="bento-overlay">
+                        <h3>Rolex Cosmograph</h3>
+                        <span class="bento-price">2800 DH</span>
+                        <button class="btn-orda" onclick="addToCart('Rolex Cosmograph', '2800 DH', this)">Add to Order</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Order Section -->
+        <section class="order-section" id="order">
+            <div class="section-intro">
+                <p>Personal Concierge</p>
+                <h2>Complete Your Request</h2>
+            </div>
+
+            <div class="order-container">
+                <div id="shoppingCart" class="order-summary" style="display: none; margin-bottom: 3rem;">
+                    <h3 style="color: var(--accent-gold); margin-bottom: 1.5rem; letter-spacing: 2px; text-transform: uppercase; font-size: 0.9rem;">Selected Timepieces</h3>
+                    <div id="cartItems"></div>
+                    <div style="margin-top: 1.5rem; border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 1rem;">
+                        <p>Total Items: <span id="cartCount">0</span></p>
+                    </div>
+                </div>
+
+                <form id="orderForm">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="name" required placeholder="Votre nom complet">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="phone" required placeholder="+212 600-000000">
+                    </div>
+                    <div class="form-group">
+                        <label>Delivery Address</label>
+                        <textarea id="address" rows="3" required placeholder="Adresse de livraison au Maroc"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; cursor: pointer;">ORDA VIA WHATSAPP</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer style="padding: 4rem 5%; text-align: center; border-top: 1px solid rgba(212, 175, 55, 0.1);">
+        <div class="brand-logo" style="margin-bottom: 1rem;">BELLA KRAFT</div>
+        <p style="color: var(--text-gray); font-size: 0.8rem; letter-spacing: 2px;">© 2024 BELLA KRAFT. THE ART OF TIME. GENEVE.</p>
+    </footer>
+
+</body>
+</html>

@@ -107,11 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const itemsList = cart.map(item => `- ${item.name}: ${item.price}`).join('%0A');
             const message = `Salam, bghit ndir commande 👇%0A` +
-                            `- Smia: ${name}%0A` +
-                            `- Produits:%0A${itemsList}%0A` +
-                            `- Téléphone: ${phone}%0A` +
-                            `- Adresse: ${address}%0A%0A` +
-                            `Ch7al ghadi twsel l commande?`;
+                            `- Name: ${name}%0A` +
+                            `- Products:%0A${itemsList}%0A` +
+                            `- Phone: ${phone}%0A` +
+                            `- Address: ${address}%0A%0A`;
 
             window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
         });

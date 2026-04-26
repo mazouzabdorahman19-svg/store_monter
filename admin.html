@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BELLA KRAFT | Admin Elite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #060e0c;
+            --sidebar-bg: #0a1412;
+            --accent-gold: #D4AF37;
+            --accent-gold-soft: rgba(212, 175, 55, 0.1);
+            --card-bg: #0f1c19;
+            --text-white: #ffffff;
+            --text-gray: #a0a0a0;
+            --danger: #ff4757;
+            --success: #2ed573;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-white);
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid rgba(212, 175, 55, 0.1);
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .brand-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            color: var(--accent-gold);
+            text-decoration: none;
+            letter-spacing: 3px;
+            margin-bottom: 4rem;
+            font-weight: 600;
+        }
+
+        .nav-group { flex-grow: 1; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            color: var(--text-gray);
+            text-decoration: none;
+            padding: 1rem 0;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            border-bottom: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .nav-item i { font-size: 1.1rem; }
+
+        .nav-item:hover, .nav-item.active {
+            color: var(--accent-gold);
+            padding-left: 5px;
+        }
+
+        .logout {
+            margin-top: auto;
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .main {
+            flex-grow: 1;
+            margin-left: 280px;
+            padding: 4rem;
+            max-width: 1400px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4rem;
+        }
+
+        .header-left h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-left p { color: var(--text-gray); font-size: 0.9rem; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 4px;
+            border: 1px solid rgba(212, 175, 55, 0.05);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover { border-color: var(--accent-gold); transform: translateY(-5px); }
+
+        .stat-card h3 { color: var(--text-gray); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem; }
+
+        .stat-card .value { font-size: 2rem; font-family: 'Cormorant Garamond', serif; color: var(--accent-gold); }
+
+        .actions-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 2rem;
+        }
+
+        .search-box {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 0.8rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-grow: 1;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: white;
+            outline: none;
+            width: 100%;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            background: var(--accent-gold);
+            color: var(--bg-dark);
+            border: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn:hover { background: var(--text-white); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+
+        .table-container {
+            background: var(--card-bg);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        th {
+            background: rgba(255,255,255,0.02);
+            padding: 1.5rem;
+            text-align: left;
+            color: var(--accent-gold);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        td { 
+            padding: 1.5rem; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+            font-size: 0.9rem;
+            vertical-align: middle;
+            line-height: 1.4;
+        }
+
+        .prod-img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; display: block; border: 1px solid rgba(212, 175, 55, 0.2); }
+
+        .cat-tag {
+            display: inline-block;
+            background: var(--accent-gold-soft);
+            color: var(--accent-gold);
+            padding: 0.4rem 1rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .actions { display: flex; gap: 1rem; align-items: center; min-width: 120px; }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+
+        .action-btn:hover { color: var(--accent-gold); }
+        .action-btn.delete:hover { color: var(--danger); }
+        .action-btn.stock-toggle:hover { color: var(--success); }
+        .action-btn.out-of-stock { color: var(--danger); }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--sidebar-bg);
+            padding: 4rem;
+            width: 600px;
+            border: 1px solid var(--accent-gold-soft);
+            position: relative;
+        }
+
+        .modal-content h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; margin-bottom: 2.5rem; }
+
+        .form-group { margin-bottom: 2rem; }
+
+        .form-group label { display: block; margin-bottom: 0.8rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: var(--accent-gold); }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            background: var(--bg-dark);
+            border: none;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 1rem 0;
+            color: white;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus { outline: none; border-color: var(--accent-gold); }
+
+        .export-section { margin-top: 5rem; }
+
+        .code-box {
+            background: #000;
+            padding: 2rem;
+            position: relative;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        pre { color: #00ff88; font-family: 'Courier New', Courier, monospace; font-size: 0.85rem; overflow-x: auto; max-height: 400px; }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 1.2rem 2.5rem;
+            background: var(--accent-gold);
+            color: var(--bg-dark);
+            font-weight: 700;
+            transform: translateY(100px);
+            transition: var(--transition);
+            z-index: 3000;
+        }
+
+        .toast.show { transform: translateY(0); }
+
+        @media (max-width: 1024px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .sidebar { width: 80px; padding: 2rem 1rem; text-align: center; }
+            .brand-logo, .nav-item span { display: none; }
+            .main { margin-left: 80px; padding: 2rem; }
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding: 1rem;
+        }
+
+        .page-btn-admin {
+            padding: 0.5rem 1rem;
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-white);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.8rem;
+        }
+
+        .page-btn-admin:hover, .page-btn-admin.active {
+            background: var(--accent-gold);
+            color: var(--bg-dark);
+            border-color: var(--accent-gold);
+        }
+
+        .page-btn-admin.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <a href="index.html" class="brand-logo">BK</a>
+        <div class="nav-group">
+            <a href="#" class="nav-item active" onclick="switchView('inventory')"><i class="fas fa-th-large"></i> <span>Inventory</span></a>
+            <a href="#" class="nav-item" onclick="switchView('categories')"><i class="fas fa-tags"></i> <span>Categories</span></a>
+            <a href="#" class="nav-item" onclick="switchView('orders')"><i class="fas fa-shopping-bag"></i> <span>Orders</span></a>
+            <a href="#" class="nav-item" onclick="switchView('clients')"><i class="fas fa-users"></i> <span>Clients</span></a>
+            <a href="#" class="nav-item" onclick="switchView('settings')"><i class="fas fa-cog"></i> <span>Settings</span></a>
+        </div>
+        <a href="index.html" class="logout"><i class="fas fa-sign-out-alt"></i> <span>Exit Admin</span></a>
+    </div>
+
+    <div class="main">
+        <!-- INVENTORY VIEW -->
+        <div id="inventoryView" class="view-section">
+            <header>
+                <div class="header-left">
+                    <h1>Elite Dashboard</h1>
+                    <p>Welcome back, manage your luxury timepieces.</p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn" style="background: var(--accent-gold); color: #000; font-weight: 800;" onclick="resetStore()">
+                        <i class="fas fa-sync-alt"></i> RESET TO LUXURY CATALOG (81 ITEMS)
+                    </button>
+                    <button class="btn" onclick="openModal()">Add Product</button>
+                </div>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Items</h3>
+                    <div class="value" id="totalItems">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Value</h3>
+                    <div class="value" id="totalValue">0 DH</div>
+                </div>
+                <div class="stat-card">
+                    <h3>New Orders</h3>
+                    <div class="value" id="newOrdersCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Revenue</h3>
+                    <div class="value" id="totalRevenue">0 DH</div>
+                </div>
+            </div>
+
+            <div class="actions-bar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search by name or category..." onkeyup="filterTable()">
+                </div>
+                <select id="catFilter" class="btn" style="background: var(--card-bg); color: white; border: 1px solid rgba(255,255,255,0.1);" onchange="filterTable()">
+                    <option value="all">All Categories</option>
+                </select>
+            </div>
+
+            <div class="table-container">
+                <table style="table-layout: fixed;">
+                    <thead>
+                        <tr>
+                            <th style="width: 120px;">Preview</th>
+                            <th>Product Details</th>
+                            <th style="width: 150px;">Category</th>
+                            <th style="width: 120px;">Price</th>
+                            <th style="width: 150px;">Status</th>
+                            <th style="width: 150px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productList"></tbody>
+                </table>
+            </div>
+            <div id="adminPagination" class="pagination"></div>
+
+            <div class="export-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <div>
+                        <h2 style="font-family: 'Cormorant Garamond', serif;">System Sync</h2>
+                        <p style="color: var(--text-gray); font-size: 0.8rem;">Export this code to your script.js file to save permanently.</p>
+                    </div>
+                    <button class="btn" onclick="copySystemCode()">Copy System Code</button>
+                </div>
+                <div class="code-box">
+                    <pre id="codeExport"></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- CATEGORIES VIEW -->
+        <div id="categoriesView" class="view-section" style="display: none;">
+            <header>
+                <div class="header-left">
+                    <h1>Category Manager</h1>
+                    <p>Add or edit your luxury watch categories.</p>
+                </div>
+                <button class="btn" onclick="addCategory()">Add Category</button>
+            </header>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category Name</th>
+                            <th>Slug (Internal)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoryList"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ORDERS VIEW -->
+        <div id="ordersView" class="view-section" style="display: none;">
+            <header>
+                <div class="header-left">
+                    <h1>Order Requests</h1>
+                    <p>Recent WhatsApp order requests from your store.</p>
+                </div>
+            </header>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Client Name</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- CLIENTS VIEW -->
+        <div id="clientsView" class="view-section" style="display: none;">
+            <header>
+                <div class="header-left">
+                    <h1>Client Database</h1>
+                    <p>Manage your luxury client relationships.</p>
+                </div>
+            </header>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Contact</th>
+                            <th>Total Spent</th>
+                            <th>Last Order</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SETTINGS VIEW -->
+        <div id="settingsView" class="view-section" style="display: none;">
+            <header>
+                <div class="header-left">
+                    <h1>Store Settings</h1>
+                    <p>Configure your shop's global parameters.</p>
+                </div>
+            </header>
+            <div class="modal-content" style="width: 100%; border: none; background: var(--card-bg);">
+                <div class="form-group">
+                    <label>WhatsApp Business Number</label>
+                    <input type="text" id="settingWhatsapp" value="+212 639-461996">
+                </div>
+                <div class="form-group">
+                    <label>Store Currency</label>
+                    <input type="text" value="DH (Moroccan Dirham)">
+                </div>
+                <button class="btn" onclick="showToast('Settings Saved!')">Save All Settings</button>
+                
+                <div style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <h2 style="color: var(--accent-gold); margin-bottom: 1rem;">System Sync</h2>
+                    <p style="font-size: 0.8rem; color: var(--text-gray); margin-bottom: 1.5rem;">Copy this code to your <strong>script.js</strong> to save all changes permanently.</p>
+                    <div style="background: #000; padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(212,175,55,0.2); position: relative;">
+                        <pre id="codeExport" style="font-size: 0.7rem; color: #0f0; overflow-x: auto; max-height: 200px;"></pre>
+                        <button onclick="copySystemCode()" style="position: absolute; top: 1rem; right: 1rem; background: var(--accent-gold); color: #000; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-weight: 700; cursor: pointer;">COPY SYSTEM CODE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal (Add Product) -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <h2 id="modalTitle">New Masterpiece</h2>
+            <form id="productForm">
+                <input type="hidden" id="editIndex">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="pName" required>
+                </div>
+                <div class="form-group" style="display: flex; gap: 2rem;">
+                    <div style="flex: 1;">
+                        <label>Category</label>
+                        <select id="pCategory"></select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Stock Qty</label>
+                        <input type="number" id="pStock" value="1" min="1" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Price (DH)</label>
+                    <input type="text" id="pPrice" required>
+                </div>
+                <div class="form-group">
+                    <label>Upload Image</label>
+                    <input type="file" id="pImageFile" accept="image/*" style="border: none;">
+                    <input type="hidden" id="pImageUrl">
+                    <div id="imgPrevContainer" style="margin-top: 1.5rem; display: none;">
+                        <img id="modalImgPrev" src="" style="width: 120px; height: 120px; object-fit: cover; border: 1px solid var(--accent-gold);">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1.5rem; margin-top: 3rem;">
+                    <button type="submit" class="btn">Save Changes</button>
+                    <button type="button" class="btn" style="background: transparent; color: white; border: 1px solid rgba(255,255,255,0.1);" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Action Completed!</div>
+
+    <script>
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(view => view.style.display = 'none');
+            document.getElementById(viewName + 'View').style.display = 'block';
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                if (item.getAttribute('onclick').includes(viewName)) item.classList.add('active');
+            });
+        }
+        const defaultProducts = [{ id: 1, name: 'Luxy IEKE Elite #1', price: '350 DH', category: 'dw', image: 'Luxy IEKE/00220acb-f553-4cfc-ad73-ff7766304fdb.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 2, name: 'Luxy IEKE Elite #2', price: '850 DH', category: 'premium', image: 'Luxy IEKE/01b1bcd5-16b6-49ea-9202-b36630135119.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 3, name: 'Luxy IEKE Elite #3', price: '350 DH', category: 'fashion', image: 'Luxy IEKE/0526a2c4-bfc2-4276-80ba-45d75f94a49d.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 4, name: 'Luxy IEKE Elite #4', price: '350 DH', category: 'essential', image: 'Luxy IEKE/06c5ae15-c0bb-473d-a661-014b4eae2c3c.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 5, name: 'Luxy IEKE Elite #5', price: '1200 DH', category: 'rolex', image: 'Luxy IEKE/0eade9ce-3205-4737-af36-d5ae78c2335e.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 6, name: 'Luxy IEKE Elite #6', price: '350 DH', category: 'dw', image: 'Luxy IEKE/123f15c2-4b9f-4ce9-98fb-a8cfeddd91e0.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 7, name: 'Luxy IEKE Elite #7', price: '850 DH', category: 'premium', image: 'Luxy IEKE/1309ea64-725c-49bb-961c-c2cc988afde4.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 8, name: 'Luxy IEKE Elite #8', price: '350 DH', category: 'fashion', image: 'Luxy IEKE/17db9946-15ac-4eee-8578-ca2dd4a3fe03.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 9, name: 'Luxy IEKE Elite #9', price: '350 DH', category: 'essential', image: 'Luxy IEKE/19cf4cf8-3eb3-4c39-96ce-e4b7b3720d91.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 10, name: 'Luxy IEKE Elite #10', price: '1200 DH', category: 'rolex', image: 'Luxy IEKE/1fcaf696-c5dc-4523-90fa-ec1d5bf01d2b.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 11, name: 'Luxy IEKE Elite #11', price: '350 DH', category: 'dw', image: 'Luxy IEKE/2060f5ee-d519-4d0f-a90e-e08f3b5de094.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 12, name: 'Luxy IEKE Elite #12', price: '850 DH', category: 'premium', image: 'Luxy IEKE/2067132d-109a-46eb-9553-b5080b7a42ec.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 13, name: 'Luxy IEKE Elite #13', price: '350 DH', category: 'fashion', image: 'Luxy IEKE/23aa5192-d5ac-4511-9adc-e35c8911aa35.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 14, name: 'Luxy IEKE Elite #14', price: '350 DH', category: 'essential', image: 'Luxy IEKE/25967777-3e6e-4459-b427-6e5e6b87371a.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 15, name: 'Luxy IEKE Elite #15', price: '1200 DH', category: 'rolex', image: 'Luxy IEKE/29465e04-b569-4f48-b452-5aebe33390ef.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 16, name: 'Luxy IEKE Elite #16', price: '350 DH', category: 'dw', image: 'Luxy IEKE/2b9c7fc6-f377-4018-a1d9-7f9472b5e438.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 17, name: 'Luxy IEKE Elite #17', price: '850 DH', category: 'premium', image: 'Luxy IEKE/2f8affbd-0605-4be1-823a-9909576001a9.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 18, name: 'Luxy IEKE Elite #18', price: '350 DH', category: 'fashion', image: 'Luxy IEKE/33cde924-0985-4ece-b4a9-73863e240d1b.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 19, name: 'Luxy IEKE Elite #19', price: '350 DH', category: 'essential', image: 'Luxy IEKE/369e1a9f-8b39-49db-8675-4e78c1f40ca9.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 20, name: 'Luxy IEKE Elite #20', price: '1200 DH', category: 'rolex', image: 'Luxy IEKE/399c7d59-95e3-4a80-9b8a-2b5593c0d9ae.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 21, name: 'Luxy IEKE Elite #21', price: '350 DH', category: 'dw', image: 'Luxy IEKE/3daf1121-ff92-4532-812f-770e9622867c.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 22, name: 'Luxy IEKE Elite #22', price: '850 DH', category: 'premium', image: 'Luxy IEKE/403bed5a-0d2e-40ee-8c35-33b40eda1522.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 23, name: 'Luxy IEKE Elite #23', price: '350 DH', category: 'fashion', image: 'Luxy IEKE/40c364a3-7e1d-4864-9ea6-63069de8d135.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 24, name: 'Luxy IEKE Elite #24', price: '350 DH', category: 'essential', image: 'Luxy IEKE/45ea61bb-1a68-4ba1-a10e-35e12c9fe406.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 25, name: 'Luxy IEKE Elite #25', price: '1200 DH', category: 'rolex', image: 'Luxy IEKE/4efc22dc-780c-46d1-a652-7866bd669953.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 26, name: 'Luxy IEKE Elite #26', price: '350 DH', category: 'dw', image: 'Luxy IEKE/4f763322-a497-4dd9-bb85-62e4b0e79bdb.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 27, name: 'Luxy IEKE Elite #27', price: '850 DH', category: 'premium', image: 'Luxy IEKE/500948bb-5987-4b98-ac38-b228e91ce950.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 28, name: 'Luxy IEKE Elite #28', price: '350 DH', category: 'fashion', image: 'Luxy IEKE/52a00a50-1cac-49f1-a1ec-eaf9ac4c3bae.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 29, name: 'Luxy IEKE Elite #29', price: '350 DH', category: 'essential', image: 'Luxy IEKE/584366c2-7091-4b8f-8168-5e2e1f8a916d.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 30, name: 'Luxy IEKE Elite #30', price: '1200 DH', category: 'rolex', image: 'Luxy IEKE/58750d9b-3ff2-4641-8b4d-97eb8b6e9ea4.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 31, name: 'Luxy IEKE Elite #31', price: '350 DH', category: 'dw', image: 'Luxy IEKE/597de39c-fd41-4440-a206-2c3eceec60b9.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 32, name: 'Luxy IEKE Elite #32', price: '850 DH', category: 'premium', image: 'Luxy IEKE/5b74b14e-94cb-4188-ade5-d47da4a7bc25.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 33, name: 'Luxy IEKE Elite #33', price: '350 DH', category: 'fashion', image: 'Luxy IEKE/64688a39-8e99-4cd5-9baa-42b337a05982.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 34, name: 'Luxy IEKE Elite #34', price: '350 DH', category: 'essential', image: 'Luxy IEKE/64acba40-dbc2-44e6-9055-64a52e57a677.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 35, name: 'Luxy IEKE Elite #35', price: '1200 DH', category: 'rolex', image: 'Luxy IEKE/65a80a36-90a7-4f9d-b71a-6cba6a3dd7ca.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 36, name: 'Luxy IEKE Elite #36', price: '350 DH', category: 'dw', image: 'Luxy IEKE/68b8031a-4fc1-453a-b10f-0023bb4496eb.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 37, name: 'Luxy IEKE Elite #37', price: '850 DH', category: 'premium', image: 'Luxy IEKE/71e9b845-1082-4a96-a31d-a09472295b37.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 38, name: 'Luxy IEKE Elite #38', price: '350 DH', category: 'fashion', image: 'Luxy IEKE/7371f6d0-9994-4287-b1e4-c01190f1b6da(1).jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 39, name: 'Luxy IEKE Elite #39', price: '350 DH', category: 'essential', image: 'Luxy IEKE/7371f6d0-9994-4287-b1e4-c01190f1b6da.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 40, name: 'Luxy IEKE Elite #40', price: '1200 DH', category: 'rolex', image: 'Luxy IEKE/737a5076-df5f-4617-a6e3-f3d0db608952.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 41, name: 'Luxy IEKE Elite #41', price: '350 DH', category: 'dw', image: 'Luxy IEKE/73b9bd16-82ec-4727-b31f-0500ecaa29d1.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 42, name: 'Luxy IEKE Elite #42', price: '850 DH', category: 'premium', image: 'Luxy IEKE/73d3f04b-bc39-4e2d-bb74-614b1bb6a0aa.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 43, name: 'Luxy IEKE Elite #43', price: '350 DH', category: 'fashion', image: 'Luxy IEKE/77ddd979-d3e4-47a0-adde-8ffdd3e66eec.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 44, name: 'Luxy IEKE Elite #44', price: '350 DH', category: 'essential', image: 'Luxy IEKE/7aa328b9-db3c-4c4e-8b6e-8a62d345c3a2.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 45, name: 'Luxy IEKE Elite #45', price: '1200 DH', category: 'rolex', image: 'Luxy IEKE/7e2eaa95-d782-4b6b-90a3-5263b4ec9133.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 46, name: 'Luxy IEKE Elite #46', price: '350 DH', category: 'dw', image: 'Luxy IEKE/7eccdc22-33c4-48f0-8510-ce49fb30ca36.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 47, name: 'Luxy IEKE Elite #47', price: '850 DH', category: 'premium', image: 'Luxy IEKE/7f9191b8-670e-4d67-8648-dcad6fc5e22d.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 48, name: 'Luxy IEKE Elite #48', price: '350 DH', category: 'fashion', image: 'Luxy IEKE/811dc7ee-88a9-4b3d-8849-6cb51e9eab5c.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 49, name: 'Luxy IEKE Elite #49', price: '350 DH', category: 'essential', image: 'Luxy IEKE/829589e4-5603-4d29-8f76-2a65ad96fb8a.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 50, name: 'Luxy IEKE Elite #50', price: '1200 DH', category: 'rolex', image: 'Luxy IEKE/83454748-14d1-4f93-9f6e-fdc11eba6a5d.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 51, name: 'Luxy IEKE Elite #51', price: '350 DH', category: 'dw', image: 'Luxy IEKE/88394506-f079-4ecd-8048-8d81fc47b77f.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 52, name: 'Luxy IEKE Elite #52', price: '850 DH', category: 'premium', image: 'Luxy IEKE/8b6447eb-74e0-4863-9e74-43e1a836344e.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 53, name: 'Luxy IEKE Elite #53', price: '350 DH', category: 'fashion', image: 'Luxy IEKE/8f83ff2e-30b1-43b6-95b7-37b9b3d94405.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 54, name: 'Luxy IEKE Elite #54', price: '350 DH', category: 'essential', image: 'Luxy IEKE/929ec7a8-8572-496a-af6a-04082a68c822.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 55, name: 'Luxy IEKE Elite #55', price: '1200 DH', category: 'rolex', image: 'Luxy IEKE/9b50d0a1-506a-4f83-ae6d-8b746ea227f9.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 56, name: 'Luxy IEKE Elite #56', price: '350 DH', category: 'dw', image: 'Luxy IEKE/9d330328-a98f-4bfc-90d1-7e266cfe6983.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 57, name: 'Luxy IEKE Elite #57', price: '850 DH', category: 'premium', image: 'Luxy IEKE/a39f2a21-d4c2-4d7c-a787-f292319f711a.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 58, name: 'Luxy IEKE Elite #58', price: '350 DH', category: 'fashion', image: 'Luxy IEKE/a831be81-2bb4-4eeb-962e-92c45b28c785.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 59, name: 'Luxy IEKE Elite #59', price: '350 DH', category: 'essential', image: 'Luxy IEKE/af37e5c0-12e9-47b4-bd3c-9e5f7a3abe76.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 60, name: 'Luxy IEKE Elite #60', price: '1200 DH', category: 'rolex', image: 'Luxy IEKE/b19d2e9e-6465-4e6d-8390-63fbc4497a0f.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 61, name: 'Luxy IEKE Elite #61', price: '350 DH', category: 'dw', image: 'Luxy IEKE/b486fcb8-f2ea-4e12-b93b-fda4847b8489.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 62, name: 'Luxy IEKE Elite #62', price: '850 DH', category: 'premium', image: 'Luxy IEKE/be6e0211-ebf6-4d97-9669-67071512c4a7.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 63, name: 'Luxy IEKE Elite #63', price: '350 DH', category: 'fashion', image: 'Luxy IEKE/bfbe45ea-406d-439e-89b0-813137476182.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 64, name: 'Luxy IEKE Elite #64', price: '350 DH', category: 'essential', image: 'Luxy IEKE/c7b3b929-1ac7-4b3d-bb17-569a6fc10900.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 65, name: 'Luxy IEKE Elite #65', price: '1200 DH', category: 'rolex', image: 'Luxy IEKE/cb3ec088-b2f9-4a7d-bb15-bc1f1bbbb1c2.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 66, name: 'Luxy IEKE Elite #66', price: '350 DH', category: 'dw', image: 'Luxy IEKE/d80fedb6-1cc2-4a6e-af04-238406a0a523.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 67, name: 'Luxy IEKE Elite #67', price: '850 DH', category: 'premium', image: 'Luxy IEKE/da61fb52-4572-419f-a44f-1370b01246a8.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 68, name: 'Luxy IEKE Elite #68', price: '350 DH', category: 'fashion', image: 'Luxy IEKE/e0044708-7c77-4468-b4e7-8e065ef4ab60.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 69, name: 'Luxy IEKE Elite #69', price: '350 DH', category: 'essential', image: 'Luxy IEKE/e0f3eb51-a6ea-4b72-8da1-1322bc0667f0.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 70, name: 'Luxy IEKE Elite #70', price: '1200 DH', category: 'rolex', image: 'Luxy IEKE/e32e4c6a-a434-4857-b09d-980c92ef05a7.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 71, name: 'Luxy IEKE Elite #71', price: '350 DH', category: 'dw', image: 'Luxy IEKE/e64e7137-b463-4a0e-97fc-ec967f0a3376.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 72, name: 'Luxy IEKE Elite #72', price: '850 DH', category: 'premium', image: 'Luxy IEKE/e6889bab-1dba-40fa-9b5d-bf0142d74613.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 73, name: 'Luxy IEKE Elite #73', price: '350 DH', category: 'fashion', image: 'Luxy IEKE/e91ca827-ebfa-49a0-ab14-b979c18884e1.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 74, name: 'Luxy IEKE Elite #74', price: '350 DH', category: 'essential', image: 'Luxy IEKE/ebfc3d0b-07db-4501-bc83-8666ff5224dd.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 75, name: 'Luxy IEKE Elite #75', price: '1200 DH', category: 'rolex', image: 'Luxy IEKE/ecb6a544-58b8-4ad9-93a1-9edad250c5e4.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 76, name: 'Luxy IEKE Elite #76', price: '350 DH', category: 'dw', image: 'Luxy IEKE/edb275e1-5772-4413-a4ed-8a423e5c0645.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 77, name: 'Luxy IEKE Elite #77', price: '850 DH', category: 'premium', image: 'Luxy IEKE/f1b25743-0ec2-4aa8-8693-1cc3a32c7786.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 78, name: 'Luxy IEKE Elite #78', price: '350 DH', category: 'fashion', image: 'Luxy IEKE/f6488c2b-698b-48e7-996e-ca9a7501c805.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 79, name: 'Luxy IEKE Elite #79', price: '350 DH', category: 'essential', image: 'Luxy IEKE/f80ad6c2-acf8-4d00-a7b0-e35e2a3a7791.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 80, name: 'Luxy IEKE Elite #80', price: '1200 DH', category: 'rolex', image: 'Luxy IEKE/fb2c9524-fb0d-4cd0-8bd8-ef5f8502cacb.jpg', size: 'regular', stock: 10, outOfStock: false },{ id: 81, name: 'Luxy IEKE Elite #81', price: '350 DH', category: 'dw', image: 'Luxy IEKE/fcf62b3d-76b0-44b5-a563-e8f4731c9e40.jpg', size: 'regular', stock: 10, outOfStock: false }];
+
+        // Force reset if needed
+        if (!localStorage.getItem('bk_products') || JSON.parse(localStorage.getItem('bk_products')).length < 40) {
+            localStorage.setItem('bk_products', JSON.stringify(defaultProducts));
+        }
+
+        let products = JSON.parse(localStorage.getItem('bk_products'));
+
+        let categories = JSON.parse(localStorage.getItem('bk_categories')) || [
+            { id: 'all', name: 'Kolchi' },
+            { id: 'rolex', name: 'Style Rolex' },
+            { id: 'premium', name: 'Premium' },
+            { id: 'dw', name: 'Classic' },
+            { id: 'fashion', name: 'Jdid' },
+            { id: 'essential', name: 'Darori' }
+        ];
+
+        function resetStore() {
+            if (confirm("This will RESET all products and prices. Continue?")) {
+                localStorage.setItem('bk_products', JSON.stringify(defaultProducts));
+                products = [...defaultProducts];
+                renderProducts();
+                showToast("Store Reset Successful!");
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function toggleStock(index) {
+            products[index].outOfStock = !products[index].outOfStock;
+            renderProducts();
+            showToast(products[index].outOfStock ? "Marked Out of Stock" : "Back in Stock");
+        }
+
+        let adminCurrentPage = 1;
+        const adminItemsPerPage = 10;
+
+        function renderProducts() {
+            const list = document.getElementById('productList');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const cat = document.getElementById('catFilter').value;
+            
+            const filtered = products.filter(p => 
+                (p.name.toLowerCase().includes(search) || p.category.toLowerCase().includes(search)) && 
+                (cat === 'all' || p.category === cat)
+            );
+
+            const totalPages = Math.ceil(filtered.length / adminItemsPerPage);
+            if (adminCurrentPage > totalPages && totalPages > 0) adminCurrentPage = totalPages;
+            
+            const start = (adminCurrentPage - 1) * adminItemsPerPage;
+            const paginated = filtered.slice(start, start + adminItemsPerPage);
+
+            list.innerHTML = paginated.map((p) => {
+                const realIdx = products.findIndex(orig => orig.id === p.id);
+                return `
+                <tr style="${p.outOfStock ? 'opacity: 0.5; background: rgba(255,0,0,0.02);' : ''}">
+                    <td style="width: 100px;"><img src="${p.image}" class="prod-img"></td>
+                    <td>
+                        <div style="font-weight: 700; color: #fff;">${p.name}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-gray); margin-top: 0.2rem;">ID: ${p.id} | Stock: ${p.stock || 1}</div>
+                    </td>
+                    <td><span class="cat-tag" style="min-width: 80px; text-align: center;">${p.category}</span></td>
+                    <td style="color: var(--accent-gold); font-weight: 700; white-space: nowrap;">${p.price}</td>
+                    <td>
+                        <span class="cat-tag" style="background: ${p.outOfStock ? 'rgba(255,71,87,0.1)' : 'rgba(46,213,115,0.1)'}; color: ${p.outOfStock ? 'var(--danger)' : 'var(--success)'}; min-width: 100px; text-align: center;">
+                            ${p.outOfStock ? 'SALY' : 'MAWJOD'}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <button class="action-btn stock-toggle ${p.outOfStock ? 'out-of-stock' : ''}" onclick="toggleStock(${realIdx})" title="Toggle Stock Status">
+                            <i class="fas ${p.outOfStock ? 'fa-eye-slash' : 'fa-eye'}"></i>
+                        </button>
+                        <button class="action-btn" onclick="editProduct(${realIdx})"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn delete" onclick="deleteProduct(${realIdx})"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>
+            `}).join('');
+
+            renderAdminPagination(filtered.length);
+
+            const orders = JSON.parse(localStorage.getItem('bk_orders')) || [];
+            const clients = JSON.parse(localStorage.getItem('bk_clients')) || [];
+
+            document.getElementById('totalItems').textContent = products.length;
+            const totalInv = products.reduce((acc, p) => acc + (parseInt(p.price.replace(/\D/g, '') || 0) * (p.stock || 1)), 0);
+            document.getElementById('totalValue').textContent = totalInv.toLocaleString() + " DH";
+            document.getElementById('newOrdersCount').textContent = orders.length;
+            const totalRev = clients.reduce((acc, c) => acc + parseInt(c.totalSpent.replace(/\D/g, '') || 0), 0);
+            document.getElementById('totalRevenue').textContent = totalRev > 1000 ? (totalRev / 1000).toFixed(1) + "K DH" : totalRev + " DH";
+
+            updateExportCode();
+            localStorage.setItem('bk_products', JSON.stringify(products));
+            renderOrders();
+            renderClients();
+            renderCategories();
+        }
+
+        function renderAdminPagination(totalItems) {
+            const container = document.getElementById('adminPagination');
+            const totalPages = Math.ceil(totalItems / adminItemsPerPage);
+            
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = `
+                <button class="page-btn-admin ${adminCurrentPage === 1 ? 'disabled' : ''}" 
+                        onclick="changeAdminPage(${adminCurrentPage - 1})" ${adminCurrentPage === 1 ? 'disabled' : ''}>
+                    Prev
+                </button>
+            `;
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= adminCurrentPage - 1 && i <= adminCurrentPage + 1)) {
+                    html += `<button class="page-btn-admin ${adminCurrentPage === i ? 'active' : ''}" onclick="changeAdminPage(${i})">${i}</button>`;
+                } else if (i === adminCurrentPage - 2 || i === adminCurrentPage + 2) {
+                    html += `<span style="padding: 0 0.5rem;">...</span>`;
+                }
+            }
+
+            html += `
+                <button class="page-btn-admin ${adminCurrentPage === totalPages ? 'disabled' : ''}" 
+                        onclick="changeAdminPage(${adminCurrentPage + 1})" ${adminCurrentPage === totalPages ? 'disabled' : ''}>
+                    Next
+                </button>
+            `;
+            container.innerHTML = html;
+        }
+
+        function changeAdminPage(page) {
+            adminCurrentPage = page;
+            renderProducts();
+        }
+
+        function filterTable() {
+            adminCurrentPage = 1;
+            renderProducts();
+        }
+
+        function renderCategories() {
+            const list = document.getElementById('categoryList');
+            list.innerHTML = categories.filter(c => c.id !== 'all').map((c, index) => `
+                <tr>
+                    <td><strong>${c.name}</strong></td>
+                    <td>${c.id}</td>
+                    <td class="actions">
+                        <button class="action-btn" onclick="editCategory(${index + 1})"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn delete" onclick="deleteCategory(${index + 1})"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+
+            const pCat = document.getElementById('pCategory');
+            pCat.innerHTML = categories.filter(c => c.id !== 'all').map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            
+            const filterCat = document.getElementById('catFilter');
+            filterCat.innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+            localStorage.setItem('bk_categories', JSON.stringify(categories));
+        }
+
+        function addCategory() {
+            const name = prompt("Enter Category Name:");
+            if (name) {
+                const id = name.toLowerCase().replace(/\s+/g, '-');
+                categories.push({ id, name });
+                renderCategories();
+                showToast("Category Added!");
+            }
+        }
+
+        function editCategory(index) {
+            const name = prompt("Edit Category Name:", categories[index].name);
+            if (name) {
+                categories[index].name = name;
+                renderCategories();
+                showToast("Category Updated!");
+            }
+        }
+
+        function deleteCategory(index) {
+            if (confirm("Are you sure? This will NOT delete products in this category.")) {
+                categories.splice(index, 1);
+                renderCategories();
+                showToast("Category Removed");
+            }
+        }
+
+        function renderOrders() {
+            const orders = JSON.parse(localStorage.getItem('bk_orders')) || [];
+            const list = document.querySelector('#ordersView tbody');
+            list.innerHTML = orders.length > 0 ? orders.map(o => `<tr><td>${o.id}</td><td>${o.client}</td><td>${o.items}</td><td style="color: var(--accent-gold); font-weight: 700;">${o.total}</td><td><span class="cat-tag" style="background: rgba(46, 213, 115, 0.1); color: var(--success);">${o.status}</span></td></tr>`).join('') : '<tr><td colspan="5" style="text-align: center; padding: 4rem; color: var(--text-gray);">No real orders yet.</td></tr>';
+        }
+
+        function renderClients() {
+            const clients = JSON.parse(localStorage.getItem('bk_clients')) || [];
+            const list = document.querySelector('#clientsView tbody');
+            list.innerHTML = clients.length > 0 ? clients.map(c => `<tr><td><strong>${c.name}</strong></td><td>${c.phone}</td><td style="color: var(--accent-gold); font-weight: 700;">${c.totalSpent}</td><td>${c.lastOrder}</td></tr>`).join('') : '<tr><td colspan="4" style="text-align: center; padding: 4rem; color: var(--text-gray);">No real clients registered yet.</td></tr>';
+        }
+
+        function openModal(index = null) {
+            const modal = document.getElementById('productModal');
+            modal.style.display = 'flex';
+            if (index !== null) {
+                document.getElementById('modalTitle').textContent = "Edit Timepiece";
+                document.getElementById('editIndex').value = index;
+                document.getElementById('pName').value = products[index].name;
+                document.getElementById('pCategory').value = products[index].category;
+                document.getElementById('pPrice').value = products[index].price;
+                document.getElementById('pStock').value = products[index].stock || 1;
+                document.getElementById('pImageUrl').value = products[index].image;
+                document.getElementById('imgPrevContainer').style.display = 'block';
+                document.getElementById('modalImgPrev').src = products[index].image;
+            } else {
+                document.getElementById('modalTitle').textContent = "New Masterpiece";
+                document.getElementById('productForm').reset();
+                document.getElementById('editIndex').value = "";
+                document.getElementById('imgPrevContainer').style.display = 'none';
+            }
+        }
+
+        function closeModal() { document.getElementById('productModal').style.display = 'none'; }
+
+        document.getElementById('pImageFile').onchange = function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('pImageUrl').value = event.target.result;
+                    document.getElementById('imgPrevContainer').style.display = 'block';
+                    document.getElementById('modalImgPrev').src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        document.getElementById('productForm').onsubmit = function(e) {
+            e.preventDefault();
+            const index = document.getElementById('editIndex').value;
+            const product = {
+                id: index !== "" ? products[index].id : Date.now(),
+                name: document.getElementById('pName').value,
+                category: document.getElementById('pCategory').value,
+                price: document.getElementById('pPrice').value.includes('DH') ? document.getElementById('pPrice').value : document.getElementById('pPrice').value + " DH",
+                stock: parseInt(document.getElementById('pStock').value) || 1,
+                image: document.getElementById('pImageUrl').value || 'images/placeholder.jpg',
+                size: index !== "" ? products[index].size : "regular",
+                outOfStock: index !== "" ? products[index].outOfStock : false
+            };
+            if (index !== "") products[index] = product; else products.push(product);
+            renderProducts();
+            closeModal();
+            showToast(index !== "" ? "Updated!" : "Added!");
+        };
+
+        function deleteProduct(index) { if (confirm("Sure?")) { products.splice(index, 1); renderProducts(); showToast("Deleted"); } }
+        function editProduct(index) { openModal(index); }
+        function updateExportCode() { 
+            const sysData = { products, categories };
+            const pre = document.querySelectorAll('#codeExport');
+            pre.forEach(p => {
+                p.textContent = "const products = " + JSON.stringify(products, null, 4) + ";\nconst categories = " + JSON.stringify(categories, null, 4) + ";"; 
+            });
+        }
+        function copySystemCode() { navigator.clipboard.writeText(document.getElementById('codeExport').textContent); showToast("Copied!"); }
+        renderProducts();
+    </script>
+</body>
+</html>

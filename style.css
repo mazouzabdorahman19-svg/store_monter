@@ -275,9 +275,9 @@ header.scrolled {
     color: var(--accent-gold);
 }
 
-/* Category Tabs - Premium Upgrade */
+/* Category Tabs - Premium Style (Fixed) */
 .category-container {
-    padding: 1rem 0;
+    padding: 1.5rem 0;
     display: flex;
     justify-content: center;
     gap: 0.8rem;
@@ -288,8 +288,9 @@ header.scrolled {
     position: sticky;
     top: 80px; 
     z-index: 100;
-    background: var(--bg-dark); /* Solid background for cleaner look */
-    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+    background: rgba(6, 14, 12, 0.85); /* Back to subtle glassmorphism */
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.05);
     margin-bottom: 2rem;
     width: 100%;
 }
@@ -299,13 +300,13 @@ header.scrolled {
 }
 
 .category-tab {
-    padding: 0.8rem 2rem;
+    padding: 0.7rem 1.8rem;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(212, 175, 55, 0.1);
     color: var(--text-gray);
-    border-radius: 4px; /* Back to sleek sharp edges but refined */
-    font-size: 0.7rem;
-    font-weight: 500;
+    border-radius: 50px; /* Back to rounded pills */
+    font-size: 0.65rem;
+    font-weight: 600;
     letter-spacing: 2px;
     text-transform: uppercase;
     cursor: pointer;
@@ -324,7 +325,7 @@ header.scrolled {
     background: var(--accent-gold);
     color: var(--bg-dark);
     border-color: var(--accent-gold);
-    box-shadow: 0 5px 20px rgba(212, 175, 55, 0.2);
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.25);
     font-weight: 700;
 }
 
@@ -959,15 +960,17 @@ footer {
     }
 
     .category-container {
-        padding: 1rem 1.5rem;
+        padding: 1rem 1.2rem;
         justify-content: flex-start;
         gap: 0.6rem;
-        top: 70px; /* Adjust for mobile nav height if needed */
+        top: 70px;
+        background: rgba(6, 14, 12, 0.95);
     }
 
     .category-tab {
         padding: 0.6rem 1.2rem;
         font-size: 0.65rem;
+        border-radius: 50px;
     }
 
     .section-header {

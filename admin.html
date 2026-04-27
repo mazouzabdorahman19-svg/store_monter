@@ -803,24 +803,7 @@
             }
         }
 
-        async function isUserAdmin(user) {
-            if (!user) return false;
-            
-            // Owner Dashboard User Override
-            if (user.email === 'admin@BellaKraft.com') return true;
 
-            if (!isFirestoreReady()) return false;
-            try {
-                const adminRef = fs.collection(FIRESTORE_CATALOG_COLLECTION)
-                    .doc(FIRESTORE_CATALOG_DOC)
-                    .collection('admins')
-                    .doc(user.uid);
-                const snap = await adminRef.get();
-                return !!(snap && (typeof snap.exists === 'function' ? snap.exists() : snap.exists));
-            } catch {
-                return false;
-            }
-        }
 
         function logout() {
             if (auth) {
@@ -1516,9 +1499,30 @@
             renderClients();
         }
 
+        async function isUserAdmin(user) {
+            if (!user) return false;
+            
+            // Owner Dashboard User Override (Case-insensitive check)
+            const adminEmail = (user.email || '').toLowerCase();
+            if (adminEmail === 'admin@bellakraft.com') return true;
+
+            if (!isFirestoreReady()) return false;
+            try {
+                const adminRef = fs.collection(FIRESTORE_CATALOG_COLLECTION)
+                    .doc(FIRESTORE_CATALOG_DOC)
+                    .collection('admins')
+                    .doc(user.uid);
+                const snap = await adminRef.get();
+                return !!(snap && (typeof snap.exists === 'function' ? snap.exists() : snap.exists));
+            } catch (err) {
+                console.error("Admin check error:", err);
+                return false;
+            }
+        }
+
         function initAdminAuthGate() {
             if (!auth || !isFirebaseConfigured()) {
-                showAuthGate("Firebase Auth is not configured. Paste your real firebaseConfig first.");
+                showAuthGate("Firebase Config is missing! Copy your firebaseConfig from Firebase Console and paste it into the script tag of admin.html.");
                 return;
             }
 
@@ -1528,12 +1532,23 @@
             if (form) {
                 form.addEventListener('submit', async (e) => {
                     e.preventDefault();
+                    const btn = form.querySelector('button');
+                    const originalText = btn.textContent;
+                    
                     const email = (document.getElementById('adminEmail')?.value || '').trim();
                     const pass = (document.getElementById('adminPass')?.value || '').trim();
+                    
                     try {
+                        btn.disabled = true;
+                        btn.textContent = "Checking Credentials...";
                         await auth.signInWithEmailAndPassword(email, pass);
                     } catch (err) {
-                        showAuthGate(err?.message || "Login failed.");
+                        btn.disabled = false;
+                        btn.textContent = originalText;
+                        let errorMsg = "Login Failed: " + err.message;
+                        if (err.code === 'auth/user-not-found') errorMsg = "User not found. Create the account in Firebase Console first.";
+                        if (err.code === 'auth/wrong-password') errorMsg = "Wrong password. Try again.";
+                        showAuthGate(errorMsg);
                     }
                 });
             }

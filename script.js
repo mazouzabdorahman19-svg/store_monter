@@ -109,12 +109,12 @@ const products = JSON.parse(localStorage.getItem('bk_products')) || rawProducts;
 
 // Initialize Categories from storage
 let categories = JSON.parse(localStorage.getItem('bk_categories')) || [
-    { id: 'all', name: 'Kolchi' },
-    { id: 'rolex', name: 'Style Rolex' },
-    { id: 'premium', name: 'Premium' },
-    { id: 'dw', name: 'Classic' },
-    { id: 'fashion', name: 'Jdid' },
-    { id: 'essential', name: 'Darori' }
+    { id: 'all', name: 'KOLCHI' },
+    { id: 'rolex', name: 'STYLE ROLEX' },
+    { id: 'premium', name: 'PREMIUM' },
+    { id: 'dw', name: 'CLASSIC' },
+    { id: 'loro', name: 'L\'ORO' },
+    { id: 'danori', name: 'DANORI' }
 ];
 
 // Fetch from Firebase if available

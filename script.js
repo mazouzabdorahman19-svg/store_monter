@@ -1,4 +1,20 @@
 // BELLA KRAFT - Premium Logic
+const firebaseConfig = {
+    apiKey: "AIzaSyAs-PLACEHOLDER",
+    authDomain: "bellakraft-store.firebaseapp.com",
+    databaseURL: "https://bellakraft-store-default-rtdb.firebaseio.com",
+    projectId: "bellakraft-store",
+    storageBucket: "bellakraft-store.appspot.com",
+    messagingSenderId: "1234567890",
+    appId: "1:1234567890:web:abcdef123456"
+};
+
+// Initialize Firebase
+if (typeof firebase !== 'undefined') {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = typeof firebase !== 'undefined' ? firebase.database() : null;
+
 const WHATSAPP_NUMBER = "212639461996";
 let cart = [];
 let currentPage = 1;
@@ -89,9 +105,10 @@ const rawProducts = [
     { id: 81, name: 'Luxy IEKE Elite #81', price: '350 DH', category: 'dw', image: 'Luxy IEKE/fcf62b3d-76b0-44b5-a563-e8f4731c9e40.jpg' }
 ];
 
-const products = rawProducts; // Unified Grid: Remove masonry sizes
+const products = JSON.parse(localStorage.getItem('bk_products')) || rawProducts;
 
-const categories = [
+// Initialize Categories from storage
+let categories = JSON.parse(localStorage.getItem('bk_categories')) || [
     { id: 'all', name: 'Kolchi' },
     { id: 'rolex', name: 'Style Rolex' },
     { id: 'premium', name: 'Premium' },
@@ -99,6 +116,17 @@ const categories = [
     { id: 'fashion', name: 'Jdid' },
     { id: 'essential', name: 'Darori' }
 ];
+
+// Fetch from Firebase if available
+if (db && firebaseConfig.apiKey !== "AIzaSyAs-PLACEHOLDER") {
+    db.ref('categories').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            categories = data;
+            renderCategories();
+        }
+    });
+}
 
 let currentCategory = 'all';
 
@@ -203,18 +231,27 @@ function renderProducts() {
     const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
     
     grid.innerHTML = paginatedItems.map((p) => `
-        <div class="masonry-item regular" onclick="openQuickView(${p.id})">
-            <img src="${p.image}" class="masonry-img" alt="${p.name}">
+        <div class="masonry-item regular ${p.outOfStock ? 'out-of-stock' : ''}" onclick="${p.outOfStock ? '' : `openQuickView(${p.id})`}">
+            <img src="${p.image}" class="masonry-img" alt="${p.name}" style="${p.outOfStock ? 'filter: grayscale(1); opacity: 0.6;' : ''}">
+            
+            ${p.outOfStock ? '<div class="sold-out-badge">SALY</div>' : `
+                <button class="quick-add-btn" onclick="event.stopPropagation(); addToCart(${p.id})" title="Add to Cart">
+                    <i class="fas fa-shopping-bag"></i>
+                </button>
+            `}
+
             <div class="product-overlay">
                 <h3>${p.name}</h3>
                 <span class="product-price">${p.price}</span>
                 <div class="overlay-btns">
+                    ${p.outOfStock ? '' : `
                     <button class="icon-btn" onclick="event.stopPropagation(); addToCart(${p.id})">
                         <i class="fas fa-shopping-bag"></i>
                     </button>
                     <button class="icon-btn">
                         <i class="fas fa-eye"></i>
                     </button>
+                    `}
                 </div>
             </div>
         </div>
@@ -309,7 +346,9 @@ function updateCartUI() {
                 <div class="cart-item-details">
                     <h4>${item.name}</h4>
                     <p>${item.price}</p>
-                    <button class="remove-item" onclick="removeFromCart(${index})">Enlever</button>
+                    <button class="remove-item" onclick="removeFromCart(${index})" title="Supprimer">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             </div>
         `).join('');
@@ -395,9 +434,158 @@ if (checkoutForm) {
         message += `%0A*Total:* ${total}%0A%0A`;
         message += `Salam, bghit nconfirmé had lcommande afakom.`;
 
+        // Save to Local History for Admin
+        const newOrder = {
+            id: Date.now(),
+            customer: name,
+            phone: phone,
+            address: address,
+            items: cart.map(i => i.name).join(', '),
+            total: total,
+            date: new Date().toLocaleString(),
+            status: 'New'
+        };
+        // Save to Firebase (Cloud Database)
+        if (db) {
+            db.ref('orders').push(newOrder);
+        }
+
+        // Keep local backup too
+        const orders = JSON.parse(localStorage.getItem('bk_orders') || '[]');
+        orders.unshift(newOrder);
+        localStorage.setItem('bk_orders', JSON.stringify(orders));
+
         window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
+        
+        // Reset cart and UI
+        cart = [];
+        updateCartUI();
+        closeCheckout();
+        toggleCart();
     });
 }
+
+// Profile Icon Logic
+function handleProfileClick() {
+    const isAdmin = localStorage.getItem('bk_admin_auth') === 'true';
+    if (isAdmin) {
+        window.location.href = 'admin.html';
+    } else {
+        const modal = document.getElementById('clientProfileModal');
+        if (modal) modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeClientProfile() {
+    const modal = document.getElementById('clientProfileModal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+// --- USER AUTH LOGIC ---
+function toggleAuthMode(mode) {
+    document.getElementById('loginView').style.display = mode === 'login' ? 'block' : 'none';
+    document.getElementById('registerView').style.display = mode === 'register' ? 'block' : 'none';
+}
+
+function handleUserRegister(e) {
+    e.preventDefault();
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const pass = document.getElementById('regPass').value.trim();
+
+    const userData = { name, email, pass, joinedAt: new Date().toLocaleString() };
+
+    if (db) {
+        db.ref('users').push(userData).then(() => {
+            showToast("Compte créé avec succès ! Bienvenue.");
+            loginUserUI(userData);
+        });
+    } else {
+        const users = JSON.parse(localStorage.getItem('bk_users') || '[]');
+        users.push(userData);
+        localStorage.setItem('bk_users', JSON.stringify(users));
+        showToast("Compte créé ! Bienvenue.");
+        loginUserUI(userData);
+    }
+}
+
+function handleUserLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('userEmail').value.trim();
+    const pass = document.getElementById('userPass').value.trim();
+
+    // --- ADMIN ACCESS CHECK ---
+    if ((email === 'admin' || email === 'admin@bellakraft.com') && pass === 'salma1234') {
+        localStorage.setItem('bk_admin_auth', 'true');
+        localStorage.setItem('bk_admin_session', JSON.stringify({
+            user: 'admin',
+            loginTime: new Date().toLocaleString(),
+            role: 'Super Admin'
+        }));
+        showToast("Welcome Boss! Redirecting to Dashboard...");
+        setTimeout(() => window.location.href = 'admin.html', 1500);
+        return;
+    }
+
+    if (db) {
+        db.ref('users').once('value').then(snapshot => {
+            const users = snapshot.val() ? Object.values(snapshot.val()) : [];
+            const user = users.find(u => u.email === email && u.pass === pass);
+            if (user) loginUserUI(user);
+            else alert("Identifiants incorrects");
+        });
+    } else {
+        const users = JSON.parse(localStorage.getItem('bk_users') || '[]');
+        const user = users.find(u => u.email === email && u.pass === pass);
+        if (user) loginUserUI(user);
+        else alert("Identifiants incorrects");
+    }
+}
+
+function loginUserUI(user) {
+    localStorage.setItem('bk_client_user', JSON.stringify(user));
+    document.getElementById('loginView').style.display = 'none';
+    document.getElementById('registerView').style.display = 'none';
+    document.getElementById('loggedInView').style.display = 'block';
+    
+    document.getElementById('welcomeUser').textContent = `Salam, ${user.name.split(' ')[0]}!`;
+    document.getElementById('userEmailDisplay').textContent = user.email;
+
+    // Load User Orders
+    const ordersList = document.getElementById('userOrdersList');
+    if (ordersList) {
+        // Logic to filter orders for this user by email
+        if (db) {
+            db.ref('orders').once('value').then(snapshot => {
+                const allOrders = snapshot.val() ? Object.values(snapshot.val()) : [];
+                // Simplified matching by phone or customer name for now, or just placeholder
+                const myOrders = allOrders.filter(o => o.customer.includes(user.name) || (o.phone && o.phone === user.phone));
+                if (myOrders.length > 0) {
+                    ordersList.innerHTML = myOrders.map(o => `
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
+                            <span>${o.date}</span>
+                            <span style="color: var(--accent-gold);">${o.total}</span>
+                        </div>
+                    `).join('');
+                }
+            });
+        }
+    }
+}
+
+function handleUserLogout() {
+    localStorage.removeItem('bk_client_user');
+    document.getElementById('loggedInView').style.display = 'none';
+    document.getElementById('loginView').style.display = 'block';
+}
+
+// Initial Auth Check
+document.addEventListener('DOMContentLoaded', () => {
+    const savedUser = JSON.parse(localStorage.getItem('bk_client_user'));
+    if (savedUser) loginUserUI(savedUser);
+});
 
 // FAQ Functions
 function initFAQ() {

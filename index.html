@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -15,6 +15,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <!-- Style -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
     <script src="script.js" defer></script>
 </head>
 <body>
@@ -36,6 +41,7 @@
         </nav>
 
         <div class="nav-actions">
+            <button class="nav-btn" onclick="handleProfileClick()"><i class="fas fa-user"></i></button>
             <div class="cart-icon-container" onclick="toggleCart()">
                 <button class="nav-btn"><i class="fas fa-shopping-bag"></i></button>
                 <span class="cart-count" id="cartCount">0</span>
@@ -158,7 +164,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© 2026 BELLA KRAFT GENEVE. ALL RIGHTS RESERVED.</p>
+            <p>© 2026 BELLA KRAFT GENEVE. ALL RIGHTS RESERVED<a href="login.html" style="color: inherit; text-decoration: none; cursor: default;">.</a></p>
         </div>
     </footer>
 
@@ -223,6 +229,80 @@
 
     <!-- Toast Notification -->
     <div class="toast" id="toast">Produit ajouté au panier !</div>
+
+    <!-- Client Profile Modal (Placeholder) -->
+    <div class="modal" id="clientProfileModal">
+        <div class="modal-content" style="max-width: 550px; padding: 3.5rem; background: #082c22; border: 1px solid rgba(212, 175, 55, 0.2);">
+            <button class="modal-close" onclick="closeClientProfile()"><i class="fas fa-times"></i></button>
+            
+            <div id="profileAuthContainer">
+                <!-- Login View -->
+                <div id="loginView">
+                    <div style="width: 60px; height: 60px; background: var(--accent-gold-soft); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; cursor: default;">
+                        <i class="fas fa-user-lock" style="font-size: 1.5rem; color: var(--accent-gold);"></i>
+                    </div>
+                    <h2 style="font-family: 'Cormorant Garamond', serif; text-align: center; margin-bottom: 2rem;">Se Connecter</h2>
+                    <form onsubmit="handleUserLogin(event)">
+                        <div style="margin-bottom: 1.5rem;">
+                            <input type="text" id="userEmail" class="auth-input" placeholder="Email ou Username" required>
+                        </div>
+                        <div style="margin-bottom: 2.5rem;">
+                            <input type="password" id="userPass" class="auth-input" placeholder="Mot de passe" required>
+                        </div>
+                        <button type="submit" class="auth-submit-btn" style="width: 100%; margin-bottom: 1.5rem;">Connexion</button>
+                    </form>
+                    <p style="text-align: center; font-size: 0.8rem; color: var(--text-gray);">
+                        Pas encore de compte ? <a href="#" onclick="toggleAuthMode('register')" class="auth-toggle-link">Créer un compte</a>
+                    </p>
+                </div>
+
+                <!-- Register View -->
+                <div id="registerView" style="display: none;">
+                    <h2 style="font-family: 'Cormorant Garamond', serif; text-align: center; margin-bottom: 2rem;">Créer un Compte</h2>
+                    <form onsubmit="handleUserRegister(event)">
+                        <div style="margin-bottom: 1.5rem;">
+                            <input type="text" id="regName" class="auth-input" placeholder="Nom complet" required>
+                        </div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <input type="email" id="regEmail" class="auth-input" placeholder="Email" required>
+                        </div>
+                        <div style="margin-bottom: 2.5rem;">
+                            <input type="password" id="regPass" class="auth-input" placeholder="Mot de passe" required>
+                        </div>
+                        <button type="submit" class="auth-submit-btn" style="width: 100%; margin-bottom: 1.5rem;">S'inscrire</button>
+                    </form>
+                    <p style="text-align: center; font-size: 0.8rem; color: var(--text-gray);">
+                        Vous avez déjà un compte ? <a href="#" onclick="toggleAuthMode('login')" class="auth-toggle-link">Se connecter</a>
+                    </p>
+                </div>
+
+                <!-- Logged In View -->
+                <div id="loggedInView" style="display: none; text-align: left;">
+                    <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2.5rem; border-bottom: 1px solid rgba(212, 175, 55, 0.1); padding-bottom: 1.5rem;">
+                        <div style="width: 60px; height: 60px; background: var(--accent-gold-soft); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-user-circle" style="font-size: 2.5rem; color: var(--accent-gold);"></i>
+                        </div>
+                        <div>
+                            <h2 id="welcomeUser" style="font-family: 'Cormorant Garamond', serif; margin: 0; font-size: 1.8rem;">Salam!</h2>
+                            <p id="userEmailDisplay" style="color: var(--text-gray); font-size: 0.8rem; margin: 0;"></p>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 2rem;">
+                        <h4 style="color: var(--accent-gold); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem;">Mes Commandes</h4>
+                        <div id="userOrdersList" style="background: rgba(255,255,255,0.02); border-radius: 4px; padding: 1.5rem; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
+                            <p style="color: var(--text-gray); font-size: 0.8rem;">Aucune commande pour le moment.</p>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn" style="flex: 1;" onclick="closeClientProfile()">Continuer mes achats</button>
+                        <button class="btn" style="flex: 1; background: transparent; border: 1px solid var(--danger); color: var(--danger);" onclick="handleUserLogout()">Déconnexion</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>

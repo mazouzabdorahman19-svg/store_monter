@@ -678,7 +678,8 @@ function handleUserLogin(e) {
     const pass = document.getElementById('userPass').value.trim();
 
     // Admin access moved to secure Firebase Auth gate in admin.html
-    if (email === 'admin' || email === 'admin@bellakraft.com') {
+    const lowerEmail = email.toLowerCase();
+    if (lowerEmail === 'admin' || lowerEmail === 'admin@bellakraft.com') {
         alert("Admin login is now secured. Please use the admin login screen.");
         window.location.href = 'admin.html';
         return;

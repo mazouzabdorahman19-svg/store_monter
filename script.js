@@ -14,6 +14,47 @@ if (typeof firebase !== 'undefined') {
     firebase.initializeApp(firebaseConfig);
 }
 const db = typeof firebase !== 'undefined' ? firebase.database() : null;
+let fs = null;
+
+const FIRESTORE_CATALOG_COLLECTION = 'stores';
+const FIRESTORE_CATALOG_DOC = 'bella-kraft';
+const LEGACY_CATEGORY_ID_MAP = { fashion: 'loro', essential: 'danori' };
+
+function safeJsonParse(value, fallback) {
+    if (typeof value !== 'string') return fallback;
+    try {
+        return JSON.parse(value);
+    } catch {
+        return fallback;
+    }
+}
+
+function isFirebaseConfigured() {
+    return typeof firebase !== 'undefined' && firebaseConfig?.apiKey && firebaseConfig.apiKey !== "AIzaSyAs-PLACEHOLDER";
+}
+
+function loadScriptOnce(src) {
+    return new Promise((resolve, reject) => {
+        const existing = document.querySelector(`script[src="${src}"]`);
+        if (existing) return resolve();
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error(`Failed to load ${src}`));
+        document.head.appendChild(script);
+    });
+}
+
+async function ensureFirestore() {
+    if (!isFirebaseConfigured()) return null;
+    if (typeof firebase === 'undefined') return null;
+    if (!firebase.firestore) {
+        await loadScriptOnce('https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js');
+    }
+    fs = firebase.firestore();
+    return fs;
+}
 
 const WHATSAPP_NUMBER = "212639461996";
 let cart = [];
@@ -105,10 +146,12 @@ const rawProducts = [
     { id: 81, name: 'Luxy IEKE Elite #81', price: '350 DH', category: 'dw', image: 'Luxy IEKE/fcf62b3d-76b0-44b5-a563-e8f4731c9e40.jpg' }
 ];
 
-const products = JSON.parse(localStorage.getItem('bk_products')) || rawProducts;
+const cachedProducts = safeJsonParse(localStorage.getItem('bk_products'), null);
+let products = Array.isArray(cachedProducts) && cachedProducts.length ? cachedProducts : rawProducts;
 
 // Initialize Categories from storage
-let categories = JSON.parse(localStorage.getItem('bk_categories')) || [
+const cachedCategories = safeJsonParse(localStorage.getItem('bk_categories'), null);
+let categories = Array.isArray(cachedCategories) && cachedCategories.length ? cachedCategories : [
     { id: 'all', name: 'KOLCHI' },
     { id: 'rolex', name: 'STYLE ROLEX' },
     { id: 'premium', name: 'PREMIUM' },
@@ -117,15 +160,70 @@ let categories = JSON.parse(localStorage.getItem('bk_categories')) || [
     { id: 'danori', name: 'DANORI' }
 ];
 
-// Fetch from Firebase if available
-if (db && firebaseConfig.apiKey !== "AIzaSyAs-PLACEHOLDER") {
-    db.ref('categories').on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            categories = data;
-            renderCategories();
-        }
+function normalizeCatalog() {
+    if (Array.isArray(products)) {
+        products.forEach(p => {
+            if (!p || typeof p !== 'object') return;
+            if (LEGACY_CATEGORY_ID_MAP[p.category]) p.category = LEGACY_CATEGORY_ID_MAP[p.category];
+        });
+    }
+
+    if (!Array.isArray(categories)) categories = [];
+    categories = categories
+        .filter(c => c && typeof c === 'object')
+        .map(c => {
+            const mappedId = LEGACY_CATEGORY_ID_MAP[c.id] || c.id;
+            const mappedName = mappedId === 'loro' ? "L'ORO" : mappedId === 'danori' ? 'DANORI' : c.name;
+            return { ...c, id: mappedId, name: mappedName };
+        });
+
+    const seen = new Set();
+    categories = categories.filter(c => {
+        if (!c?.id) return false;
+        if (seen.has(c.id)) return false;
+        seen.add(c.id);
+        return true;
     });
+
+    const allIdx = categories.findIndex(c => c.id === 'all');
+    if (allIdx === -1) categories.unshift({ id: 'all', name: 'KOLCHI' });
+    if (allIdx > 0) {
+        const [allCat] = categories.splice(allIdx, 1);
+        categories.unshift(allCat);
+    }
+}
+
+normalizeCatalog();
+
+let catalogUnsubscribe = null;
+async function initCatalogRealtimeSync() {
+    try {
+        const firestore = await ensureFirestore();
+        if (!firestore) return;
+
+        const catalogRef = firestore.collection(FIRESTORE_CATALOG_COLLECTION).doc(FIRESTORE_CATALOG_DOC);
+        catalogUnsubscribe = catalogRef.onSnapshot((docSnap) => {
+            const exists = typeof docSnap.exists === 'function' ? docSnap.exists() : docSnap.exists;
+            const data = exists ? docSnap.data() : null;
+            const nextProducts = Array.isArray(data?.products) ? data.products : null;
+            const nextCategories = Array.isArray(data?.categories) ? data.categories : null;
+
+            if (nextProducts && nextProducts.length) products = nextProducts;
+            if (nextCategories && nextCategories.length) categories = nextCategories;
+
+            normalizeCatalog();
+
+            if (nextProducts && nextProducts.length) localStorage.setItem('bk_products', JSON.stringify(products));
+            if (nextCategories && nextCategories.length) localStorage.setItem('bk_categories', JSON.stringify(categories));
+
+            renderCategories();
+            renderProducts();
+        }, () => {
+            // Offline / blocked: keep cached or hardcoded data
+        });
+    } catch {
+        // Offline / blocked: keep cached or hardcoded data
+    }
 }
 
 let currentCategory = 'all';
@@ -135,6 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initLoader();
     renderCategories();
     renderProducts();
+    initCatalogRealtimeSync();
     initAnimations();
     initFAQ();
 });

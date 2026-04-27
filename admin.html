@@ -804,7 +804,12 @@
         }
 
         async function isUserAdmin(user) {
-            if (!user || !isFirestoreReady()) return false;
+            if (!user) return false;
+            
+            // Owner Dashboard User Override
+            if (user.email === 'admin@BellaKraft.com') return true;
+
+            if (!isFirestoreReady()) return false;
             try {
                 const adminRef = fs.collection(FIRESTORE_CATALOG_COLLECTION)
                     .doc(FIRESTORE_CATALOG_DOC)

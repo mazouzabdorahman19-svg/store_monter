@@ -11,7 +11,7 @@ let categories = [];
 // Load data from JSON
 async function loadData() {
     try {
-        const response = await fetch('data.json');
+        const response = await fetch('data.json?v=' + Date.now());
         const data = await response.json();
         products = data.products;
         categories = data.categories;

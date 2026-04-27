@@ -19,6 +19,7 @@ let fs = null;
 const FIRESTORE_CATALOG_COLLECTION = 'stores';
 const FIRESTORE_CATALOG_DOC = 'bella-kraft';
 const LEGACY_CATEGORY_ID_MAP = { fashion: 'loro', essential: 'danori' };
+const FIRESTORE_ORDERS_COLLECTION = 'orders';
 
 function safeJsonParse(value, fallback) {
     if (typeof value !== 'string') return fallback;
@@ -54,6 +55,18 @@ async function ensureFirestore() {
     }
     fs = firebase.firestore();
     return fs;
+}
+
+function getStoreRef() {
+    if (!fs) return null;
+    return fs.collection(FIRESTORE_CATALOG_COLLECTION).doc(FIRESTORE_CATALOG_DOC);
+}
+
+function getProductMainImage(p) {
+    if (!p) return '';
+    if (p.image) return p.image;
+    if (Array.isArray(p.images) && p.images.length) return p.images[0];
+    return '';
 }
 
 const WHATSAPP_NUMBER = "212639461996";
@@ -331,7 +344,7 @@ function renderProducts() {
     
     grid.innerHTML = paginatedItems.map((p) => `
         <div class="masonry-item regular ${p.outOfStock ? 'out-of-stock' : ''}" onclick="${p.outOfStock ? '' : `openQuickView(${p.id})`}">
-            <img src="${p.image}" class="masonry-img" alt="${p.name}" style="${p.outOfStock ? 'filter: grayscale(1); opacity: 0.6;' : ''}">
+            <img src="${getProductMainImage(p)}" loading="lazy" decoding="async" class="masonry-img" alt="${p.name}" style="${p.outOfStock ? 'filter: grayscale(1); opacity: 0.6;' : ''}">
             
             ${p.outOfStock ? '<div class="sold-out-badge">SALY</div>' : `
                 <button class="quick-add-btn" onclick="event.stopPropagation(); addToCart(${p.id})" title="Add to Cart">
@@ -441,7 +454,7 @@ function updateCartUI() {
     if (cartList) {
         cartList.innerHTML = cart.map((item, index) => `
             <div class="cart-item">
-                <img src="${item.image}" alt="${item.name}">
+                <img src="${getProductMainImage(item)}" alt="${item.name}" loading="lazy" decoding="async">
                 <div class="cart-item-details">
                     <h4>${item.name}</h4>
                     <p>${item.price}</p>
@@ -470,11 +483,16 @@ function openQuickView(productId) {
     const p = products.find(p => p.id === productId);
     if (!p) return;
     const modalImg = document.getElementById('modalImg');
+    const modalThumbs = document.getElementById('modalThumbs');
+    const modalImgContainer = document.querySelector('#quickViewModal .modal-img-container');
     const modalName = document.getElementById('modalName');
     const modalPrice = document.getElementById('modalPrice');
     const modalAddBtn = document.getElementById('modalAddBtn');
 
-    if (modalImg) modalImg.src = p.image;
+    const images = Array.isArray(p.images) && p.images.length ? p.images : [getProductMainImage(p)].filter(Boolean);
+    const uniqueImages = Array.from(new Set(images.filter(Boolean)));
+
+    if (modalImg) modalImg.src = uniqueImages[0] || '';
     if (modalName) modalName.textContent = p.name;
     if (modalPrice) modalPrice.textContent = p.price;
     if (modalAddBtn) {
@@ -482,6 +500,31 @@ function openQuickView(productId) {
             addToCart(p.id);
             closeModal();
         };
+    }
+
+    if (modalThumbs) {
+        if (uniqueImages.length <= 1) {
+            modalThumbs.innerHTML = '';
+        } else {
+            modalThumbs.innerHTML = uniqueImages.map((u, idx) => `
+                <img src="${u}" class="${idx === 0 ? 'active' : ''}" data-url="${u}" loading="lazy" decoding="async" alt="thumb">
+            `).join('');
+
+            modalThumbs.querySelectorAll('img[data-url]').forEach(img => {
+                img.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    if (!modalImg) return;
+                    modalImg.src = img.dataset.url;
+                    modalThumbs.querySelectorAll('img').forEach(i => i.classList.remove('active'));
+                    img.classList.add('active');
+                    if (modalImgContainer) modalImgContainer.classList.remove('zoomed');
+                });
+            });
+        }
+    }
+
+    if (modalImg && modalImgContainer) {
+        modalImg.onclick = () => modalImgContainer.classList.toggle('zoomed');
     }
     
     const modal = document.getElementById('quickViewModal');
@@ -492,6 +535,8 @@ function openQuickView(productId) {
 function closeModal() {
     const modal = document.getElementById('quickViewModal');
     if (modal) modal.classList.remove('active');
+    const modalImgContainer = document.querySelector('#quickViewModal .modal-img-container');
+    if (modalImgContainer) modalImgContainer.classList.remove('zoomed');
     document.body.style.overflow = 'auto';
 }
 
@@ -512,7 +557,7 @@ function closeCheckout() {
 
 const checkoutForm = document.getElementById('checkoutForm');
 if (checkoutForm) {
-    checkoutForm.addEventListener('submit', (e) => {
+    checkoutForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('custName').value;
         const phone = document.getElementById('custPhone').value;
@@ -534,20 +579,42 @@ if (checkoutForm) {
         message += `Salam, bghit nconfirmé had lcommande afakom.`;
 
         // Save to Local History for Admin
-        const newOrder = {
-            id: Date.now(),
+        const orderBase = {
             customer: name,
-            phone: phone,
-            address: address,
-            items: cart.map(i => i.name).join(', '),
-            total: total,
+            phone,
+            address,
+            items: cart.map(i => ({
+                id: i.id,
+                name: i.name,
+                price: i.price,
+                category: i.category,
+                image: getProductMainImage(i)
+            })),
+            total,
             date: new Date().toLocaleString(),
-            status: 'New'
+            status: 'Pending'
         };
-        // Save to Firebase (Cloud Database)
-        if (db) {
-            db.ref('orders').push(newOrder);
+
+        let orderId = Date.now();
+        try {
+            const firestore = await ensureFirestore();
+            if (firestore) {
+                const storeRef = getStoreRef() || firestore.collection(FIRESTORE_CATALOG_COLLECTION).doc(FIRESTORE_CATALOG_DOC);
+                const docRef = await storeRef.collection(FIRESTORE_ORDERS_COLLECTION).add({
+                    ...orderBase,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    source: 'whatsapp'
+                });
+                orderId = docRef.id;
+            } else if (db) {
+                db.ref('orders').push({ id: orderId, ...orderBase });
+            }
+        } catch {
+            if (db) db.ref('orders').push({ id: orderId, ...orderBase });
         }
+
+        const newOrder = { id: orderId, ...orderBase };
 
         // Keep local backup too
         const orders = JSON.parse(localStorage.getItem('bk_orders') || '[]');
@@ -566,14 +633,9 @@ if (checkoutForm) {
 
 // Profile Icon Logic
 function handleProfileClick() {
-    const isAdmin = localStorage.getItem('bk_admin_auth') === 'true';
-    if (isAdmin) {
-        window.location.href = 'admin.html';
-    } else {
-        const modal = document.getElementById('clientProfileModal');
-        if (modal) modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
+    const modal = document.getElementById('clientProfileModal');
+    if (modal) modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 
 function closeClientProfile() {
@@ -615,16 +677,10 @@ function handleUserLogin(e) {
     const email = document.getElementById('userEmail').value.trim();
     const pass = document.getElementById('userPass').value.trim();
 
-    // --- ADMIN ACCESS CHECK ---
-    if ((email === 'admin' || email === 'admin@bellakraft.com') && pass === 'salma1234') {
-        localStorage.setItem('bk_admin_auth', 'true');
-        localStorage.setItem('bk_admin_session', JSON.stringify({
-            user: 'admin',
-            loginTime: new Date().toLocaleString(),
-            role: 'Super Admin'
-        }));
-        showToast("Welcome Boss! Redirecting to Dashboard...");
-        setTimeout(() => window.location.href = 'admin.html', 1500);
+    // Admin access moved to secure Firebase Auth gate in admin.html
+    if (email === 'admin' || email === 'admin@bellakraft.com') {
+        alert("Admin login is now secured. Please use the admin login screen.");
+        window.location.href = 'admin.html';
         return;
     }
 

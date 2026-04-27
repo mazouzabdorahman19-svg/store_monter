@@ -13,6 +13,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
     <style>
         :root {
@@ -36,6 +38,72 @@
             font-family: 'Montserrat', sans-serif;
             display: flex;
             min-height: 100vh;
+        }
+
+        #adminAuthGate {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem;
+            background: radial-gradient(circle at top, rgba(212, 175, 55, 0.06), transparent 45%),
+                        rgba(6, 14, 12, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 520px;
+            background: rgba(15, 28, 25, 0.95);
+            border: 1px solid rgba(212, 175, 55, 0.18);
+            border-radius: 8px;
+            padding: 2.5rem;
+            box-shadow: 0 40px 90px rgba(0,0,0,0.55);
+        }
+
+        .auth-title {
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--accent-gold);
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .auth-subtitle {
+            text-align: center;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 1rem 1.1rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            color: #fff;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .auth-input:focus {
+            border-color: rgba(212, 175, 55, 0.55);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+        }
+
+        .auth-error {
+            display: none;
+            margin-top: 1rem;
+            padding: 0.85rem 1rem;
+            border-radius: 6px;
+            background: rgba(255, 71, 87, 0.08);
+            border: 1px solid rgba(255, 71, 87, 0.25);
+            color: #ffd0d4;
+            font-size: 0.85rem;
         }
 
         .sidebar {
@@ -628,11 +696,11 @@
                     <input type="text" id="pPrice" required>
                 </div>
                 <div class="form-group">
-                    <label>Upload Image</label>
-                    <input type="file" id="pImageFile" accept="image/*" style="border: none;">
-                    <input type="hidden" id="pImageUrl">
+                    <label>Upload Images</label>
+                    <input type="file" id="pImageFiles" accept="image/*" multiple style="border: none;">
+                    <input type="url" id="pImageUrl" placeholder="Optional main image URL (fallback)" style="margin-top: 0.8rem;">
                     <div id="imgPrevContainer" style="margin-top: 1.5rem; display: none;">
-                        <img id="modalImgPrev" src="" style="width: 120px; height: 120px; object-fit: cover; border: 1px solid var(--accent-gold);">
+                        <div id="modalImgPrevList" style="display: flex; gap: 0.75rem; flex-wrap: wrap;"></div>
                     </div>
                 </div>
                 <div style="display: flex; gap: 1.5rem; margin-top: 3rem;">
@@ -644,6 +712,29 @@
     </div>
 
     <div class="toast" id="toast">Action Completed!</div>
+
+    <!-- Admin Auth Gate (Firebase Auth) -->
+    <div id="adminAuthGate" style="display: none;">
+        <div class="auth-card">
+            <div class="auth-title">BELLA KRAFT</div>
+            <div class="auth-subtitle">Admin Elite — Secure Sign In</div>
+            <form id="adminLoginForm">
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                    <label style="display:block; margin-bottom:0.5rem; color: var(--text-gray); font-size: 0.8rem; letter-spacing: 1px;">Email</label>
+                    <input class="auth-input" type="email" id="adminEmail" placeholder="you@bellakraft.com" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                    <label style="display:block; margin-bottom:0.5rem; color: var(--text-gray); font-size: 0.8rem; letter-spacing: 1px;">Password</label>
+                    <input class="auth-input" type="password" id="adminPass" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">Login</button>
+                <div class="auth-error" id="adminAuthError"></div>
+                <div style="margin-top: 1.5rem; text-align: center; color: var(--text-gray); font-size: 0.75rem;">
+                    Access is restricted to authorized admins.
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
         // --- FIREBASE CONFIGURATION ---
@@ -663,9 +754,15 @@
         }
         const db = typeof firebase !== 'undefined' ? firebase.database() : null;
         const fs = (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore() : null;
+        const auth = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null;
+        const storage = (typeof firebase !== 'undefined' && firebase.storage) ? firebase.storage() : null;
 
         const FIRESTORE_CATALOG_COLLECTION = 'stores';
         const FIRESTORE_CATALOG_DOC = 'bella-kraft';
+
+        function isFirebaseConfigured() {
+            return firebaseConfig.apiKey && firebaseConfig.apiKey !== "AIzaSyAs-PLACEHOLDER";
+        }
 
         function isFirestoreReady() {
             return !!fs && firebaseConfig.apiKey !== "AIzaSyAs-PLACEHOLDER";
@@ -676,15 +773,56 @@
             return fs.collection(FIRESTORE_CATALOG_COLLECTION).doc(FIRESTORE_CATALOG_DOC);
         }
 
-        // Route Protection
-        if (localStorage.getItem('bk_admin_auth') !== 'true') {
-            window.location.href = 'index.html';
+        function getOrdersCollectionRef() {
+            if (!isFirestoreReady()) return null;
+            return fs.collection(FIRESTORE_CATALOG_COLLECTION).doc(FIRESTORE_CATALOG_DOC).collection('orders');
+        }
+
+        function showAuthGate(message = "") {
+            const gate = document.getElementById('adminAuthGate');
+            if (gate) gate.style.display = 'flex';
+            const err = document.getElementById('adminAuthError');
+            if (err) {
+                if (message) {
+                    err.textContent = message;
+                    err.style.display = 'block';
+                } else {
+                    err.textContent = '';
+                    err.style.display = 'none';
+                }
+            }
+        }
+
+        function hideAuthGate() {
+            const gate = document.getElementById('adminAuthGate');
+            if (gate) gate.style.display = 'none';
+            const err = document.getElementById('adminAuthError');
+            if (err) {
+                err.textContent = '';
+                err.style.display = 'none';
+            }
+        }
+
+        async function isUserAdmin(user) {
+            if (!user || !isFirestoreReady()) return false;
+            try {
+                const adminRef = fs.collection(FIRESTORE_CATALOG_COLLECTION)
+                    .doc(FIRESTORE_CATALOG_DOC)
+                    .collection('admins')
+                    .doc(user.uid);
+                const snap = await adminRef.get();
+                return !!(snap && (typeof snap.exists === 'function' ? snap.exists() : snap.exists));
+            } catch {
+                return false;
+            }
         }
 
         function logout() {
-            localStorage.removeItem('bk_admin_auth');
-            localStorage.removeItem('bk_admin_session');
-            window.location.href = 'index.html';
+            if (auth) {
+                auth.signOut().finally(() => showAuthGate());
+            } else {
+                showAuthGate("Auth SDK not available.");
+            }
         }
 
         function switchView(viewName) {
@@ -1010,12 +1148,14 @@
             }
         }
 
+        let ordersUnsub = null;
         function renderOrders() {
             const list = document.querySelector('#ordersView tbody');
             if (!list) return;
 
             // 1. Show local orders immediately as fallback
             const localOrders = JSON.parse(localStorage.getItem('bk_orders') || '[]');
+            const itemsToText = (o) => Array.isArray(o?.items) ? o.items.map(i => i?.name).filter(Boolean).join(', ') : (o?.items || '');
             const renderRow = (o) => `
                 <tr>
                     <td>${o.date || 'N/A'}</td>
@@ -1025,7 +1165,7 @@
                     </td>
                     <td style="font-size: 0.8rem;">
                         <div style="color: var(--accent-gold); margin-bottom: 0.3rem;"><i class="fas fa-map-marker-alt" style="font-size: 0.7rem;"></i> ${o.address || 'No Address'}</div>
-                        <div>${o.items || ''}</div>
+                        <div>${itemsToText(o)}</div>
                     </td>
                     <td style="color: var(--accent-gold); font-weight: 700;">${o.total || '0 DH'}</td>
                     <td>
@@ -1046,6 +1186,59 @@
                 list.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 4rem; color: var(--text-gray);">No orders found.</td></tr>';
             }
 
+            // 2. Firestore real-time orders (preferred)
+            if (ordersUnsub) {
+                try { ordersUnsub(); } catch {}
+                ordersUnsub = null;
+            }
+
+            const ordersRef = getOrdersCollectionRef();
+            if (ordersRef) {
+                try {
+                    ordersUnsub = ordersRef.orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
+                        const cloudOrders = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                        if (cloudOrders.length > 0) {
+                            list.innerHTML = cloudOrders.map((o) => `
+                                <tr>
+                                    <td>${o.date || 'N/A'}</td>
+                                    <td>
+                                        <div style="font-weight: 700;">${o.customer || 'Unknown'}</div>
+                                        <div style="font-size: 0.7rem; color: var(--text-gray);">${o.phone || ''}</div>
+                                    </td>
+                                    <td style="font-size: 0.8rem;">
+                                        <div style="color: var(--accent-gold); margin-bottom: 0.3rem;"><i class="fas fa-map-marker-alt" style="font-size: 0.7rem;"></i> ${o.address || 'No Address'}</div>
+                                        <div>${itemsToText(o)}</div>
+                                    </td>
+                                    <td style="color: var(--accent-gold); font-weight: 700;">${o.total || '0 DH'}</td>
+                                    <td>
+                                        <select class="status-select" onchange="updateOrderStatus('${o.id}', this.value, true)" style="background: ${getStatusColor(o.status)}; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; outline: none;">
+                                            <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                            <option value="Confirmed" ${o.status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+                                            <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                                            <option value="Done" ${o.status === 'Done' ? 'selected' : ''}>Done</option>
+                                            <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            `).join('');
+                        } else {
+                            list.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 4rem; color: var(--text-gray);">No orders found.</td></tr>';
+                        }
+
+                        document.getElementById('newOrdersCount').textContent = cloudOrders.length;
+                        calculateRevenue(cloudOrders);
+                    }, () => {
+                        calculateRevenue(localOrders);
+                    });
+                } catch {
+                    calculateRevenue(localOrders);
+                }
+                return;
+            }
+
+            calculateRevenue(localOrders);
+            return;
+
             // 2. Try to update with Firebase if configured
             if (db && firebaseConfig.apiKey !== "AIzaSyAs-PLACEHOLDER") {
                 db.ref('orders').on('value', (snapshot) => {
@@ -1061,7 +1254,7 @@
                                 </td>
                                 <td style="font-size: 0.8rem;">
                                     <div style="color: var(--accent-gold); margin-bottom: 0.3rem;"><i class="fas fa-map-marker-alt" style="font-size: 0.7rem;"></i> ${o.address || 'No Address'}</div>
-                                    <div>${o.items || ''}</div>
+                                    <div>${itemsToText(o)}</div>
                                 </td>
                                 <td style="color: var(--accent-gold); font-weight: 700;">${o.total || '0 DH'}</td>
                                 <td>
@@ -1088,7 +1281,7 @@
             let totalRev = 0;
             orders.forEach(o => {
                 const priceNum = parseInt(o.total.replace(/[^0-9]/g, '')) || 0;
-                if (o.status === 'Confirmé') {
+                if (o.status === 'Confirmé' || o.status === 'Confirmed' || o.status === 'Done') {
                     totalRev += priceNum;
                 } else if (o.status === 'Retour') {
                     totalRev -= 45;
@@ -1099,26 +1292,41 @@
 
         function getStatusColor(status) {
             switch(status) {
-                case 'Confirmé': return '#2ed573';
-                case 'Annulé': return '#ff4757';
+                case 'Confirmé':
+                case 'Confirmed':
+                case 'Done':
+                    return '#2ed573';
+                case 'Annulé':
+                case 'Cancelled':
+                    return '#ff4757';
                 case 'Retour': return '#ffa502';
+                case 'Shipped': return '#1e90ff';
                 default: return 'rgba(212, 175, 55, 0.2)';
             }
         }
 
-        function updateOrderStatus(id, newStatus, isFirebase = false) {
-            if (isFirebase && db) {
-                db.ref('orders/' + id).update({ status: newStatus });
-                showToast("Status Updated in Cloud!");
-            } else {
-                const orders = JSON.parse(localStorage.getItem('bk_orders') || '[]');
-                const idx = orders.findIndex(o => o.id == id);
-                if (idx !== -1) {
-                    orders[idx].status = newStatus;
-                    localStorage.setItem('bk_orders', JSON.stringify(orders));
-                    renderOrders();
-                    showToast("Status Updated Locally!");
-                }
+        function updateOrderStatus(id, newStatus, isCloud = false) {
+            if (isCloud && isFirestoreReady()) {
+                const ordersRef = getOrdersCollectionRef();
+                if (!ordersRef) return;
+                ordersRef.doc(id).update({
+                    status: newStatus,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    showToast("Status Updated!");
+                }).catch(() => {
+                    showToast("Update failed");
+                });
+                return;
+            }
+
+            const orders = JSON.parse(localStorage.getItem('bk_orders') || '[]');
+            const idx = orders.findIndex(o => o.id == id);
+            if (idx !== -1) {
+                orders[idx].status = newStatus;
+                localStorage.setItem('bk_orders', JSON.stringify(orders));
+                renderOrders();
+                showToast("Status Updated Locally!");
             }
         }
 
@@ -1152,9 +1360,45 @@
             }
         }
 
+        function renderImagePreviews(urls) {
+            const container = document.getElementById('imgPrevContainer');
+            const list = document.getElementById('modalImgPrevList');
+            if (!container || !list) return;
+
+            const safeUrls = Array.isArray(urls) ? urls.filter(Boolean) : [];
+            if (safeUrls.length === 0) {
+                container.style.display = 'none';
+                list.innerHTML = '';
+                return;
+            }
+
+            container.style.display = 'block';
+            list.innerHTML = safeUrls.slice(0, 8).map(u => `
+                <img src="${u}" style="width: 90px; height: 90px; object-fit: cover; border: 1px solid rgba(212, 175, 55, 0.35); border-radius: 6px;">
+            `).join('');
+        }
+
+        async function uploadProductImages(productId, files) {
+            if (!storage || !isFirebaseConfigured()) return [];
+            const uploads = [];
+            for (const file of files) {
+                const safeName = (file?.name || 'image').replace(/[^a-z0-9._-]/gi, '_').slice(0, 80);
+                const path = `stores/${FIRESTORE_CATALOG_DOC}/products/${productId}/${Date.now()}-${safeName}`;
+                const ref = storage.ref().child(path);
+                await ref.put(file);
+                const url = await ref.getDownloadURL();
+                uploads.push(url);
+            }
+            return uploads;
+        }
+
         function openModal(index = null) {
             const modal = document.getElementById('productModal');
             modal.style.display = 'flex';
+
+            const fileInput = document.getElementById('pImageFiles');
+            if (fileInput) fileInput.value = '';
+
             if (index !== null) {
                 document.getElementById('modalTitle').textContent = "Edit Timepiece";
                 document.getElementById('editIndex').value = index;
@@ -1162,42 +1406,72 @@
                 document.getElementById('pCategory').value = products[index].category;
                 document.getElementById('pPrice').value = products[index].price;
                 document.getElementById('pStock').value = products[index].stock || 1;
-                document.getElementById('pImageUrl').value = products[index].image;
-                document.getElementById('imgPrevContainer').style.display = 'block';
-                document.getElementById('modalImgPrev').src = products[index].image;
+                document.getElementById('pImageUrl').value = products[index].image || '';
+                const urls = Array.isArray(products[index].images) && products[index].images.length
+                    ? products[index].images
+                    : (products[index].image ? [products[index].image] : []);
+                renderImagePreviews(urls);
             } else {
                 document.getElementById('modalTitle').textContent = "New Masterpiece";
                 document.getElementById('productForm').reset();
                 document.getElementById('editIndex').value = "";
-                document.getElementById('imgPrevContainer').style.display = 'none';
+                renderImagePreviews([]);
             }
         }
 
         function closeModal() { document.getElementById('productModal').style.display = 'none'; }
 
-        document.getElementById('pImageFile').onchange = function(e) {
-            const file = e.target.files[0];
-            if (file) {
+        document.getElementById('pImageFiles').onchange = function(e) {
+            const files = Array.from(e.target.files || []);
+            if (files.length === 0) {
+                renderImagePreviews([]);
+                return;
+            }
+
+            const previews = [];
+            files.slice(0, 6).forEach((file, idx) => {
                 const reader = new FileReader();
-                reader.onload = function(event) {
-                    document.getElementById('pImageUrl').value = event.target.result;
-                    document.getElementById('imgPrevContainer').style.display = 'block';
-                    document.getElementById('modalImgPrev').src = event.target.result;
+                reader.onload = (event) => {
+                    previews[idx] = event.target.result;
+                    renderImagePreviews(previews.filter(Boolean));
+                    const urlInput = document.getElementById('pImageUrl');
+                    if (urlInput && !urlInput.value) urlInput.value = previews[0] || '';
                 };
                 reader.readAsDataURL(file);
-            }
+            });
         };
 
-        document.getElementById('productForm').onsubmit = function(e) {
+        document.getElementById('productForm').onsubmit = async function(e) {
             e.preventDefault();
             const index = document.getElementById('editIndex').value;
+            const urlInput = (document.getElementById('pImageUrl')?.value || '').trim();
+
+            const fileInput = document.getElementById('pImageFiles');
+            const files = Array.from(fileInput?.files || []);
+
+            const existing = index !== "" ? products[index] : null;
+            const productId = existing?.id || Date.now();
+
+            let images = Array.isArray(existing?.images) ? [...existing.images] : (existing?.image ? [existing.image] : []);
+            if (urlInput) images = [urlInput, ...images.filter(u => u !== urlInput)];
+
+            if (files.length > 0 && storage && isFirebaseConfigured()) {
+                try {
+                    images = await uploadProductImages(productId, files);
+                } catch {
+                    // keep url/base64 fallback
+                }
+            }
+
+            const mainImage = images[0] || urlInput || existing?.image || 'images/placeholder.jpg';
             const product = {
-                id: index !== "" ? products[index].id : Date.now(),
+                id: productId,
                 name: document.getElementById('pName').value,
                 category: document.getElementById('pCategory').value,
                 price: document.getElementById('pPrice').value.includes('DH') ? document.getElementById('pPrice').value : document.getElementById('pPrice').value + " DH",
                 stock: parseInt(document.getElementById('pStock').value) || 1,
-                image: document.getElementById('pImageUrl').value || 'images/placeholder.jpg',
+                image: mainImage,
+                images: images.length ? images : (mainImage ? [mainImage] : []),
                 size: index !== "" ? products[index].size : "regular",
                 outOfStock: index !== "" ? products[index].outOfStock : false
             };
@@ -1225,12 +1499,59 @@
             });
         }
         function copySystemCode() { navigator.clipboard.writeText(document.getElementById('codeExport').textContent); showToast("Copied!"); }
-        // Initial Load
-        startCatalogListener();
-        renderProducts();
-        renderCategories();
-        renderOrders(); // Start listening to Firebase
-        renderClients();
+
+        let adminBootstrapped = false;
+        function bootstrapAdminApp() {
+            if (adminBootstrapped) return;
+            adminBootstrapped = true;
+            startCatalogListener();
+            renderCategories();
+            renderProducts();
+            renderOrders();
+            renderClients();
+        }
+
+        function initAdminAuthGate() {
+            if (!auth || !isFirebaseConfigured()) {
+                showAuthGate("Firebase Auth is not configured. Paste your real firebaseConfig first.");
+                return;
+            }
+
+            showAuthGate();
+
+            const form = document.getElementById('adminLoginForm');
+            if (form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const email = (document.getElementById('adminEmail')?.value || '').trim();
+                    const pass = (document.getElementById('adminPass')?.value || '').trim();
+                    try {
+                        await auth.signInWithEmailAndPassword(email, pass);
+                    } catch (err) {
+                        showAuthGate(err?.message || "Login failed.");
+                    }
+                });
+            }
+
+            auth.onAuthStateChanged(async (user) => {
+                if (!user) {
+                    showAuthGate();
+                    return;
+                }
+
+                const ok = await isUserAdmin(user);
+                if (!ok) {
+                    try { await auth.signOut(); } catch {}
+                    showAuthGate("Unauthorized. This account is not an admin.");
+                    return;
+                }
+
+                hideAuthGate();
+                bootstrapAdminApp();
+            });
+        }
+
+        initAdminAuthGate();
     </script>
 </body>
 </html>

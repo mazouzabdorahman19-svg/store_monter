@@ -720,8 +720,8 @@
             <div class="auth-subtitle">Admin Elite — Secure Sign In</div>
             <form id="adminLoginForm">
                 <div class="form-group" style="margin-bottom: 1.2rem;">
-                    <label style="display:block; margin-bottom:0.5rem; color: var(--text-gray); font-size: 0.8rem; letter-spacing: 1px;">Email</label>
-                    <input class="auth-input" type="email" id="adminEmail" placeholder="you@bellakraft.com" required>
+                    <label style="display:block; margin-bottom:0.5rem; color: var(--text-gray); font-size: 0.8rem; letter-spacing: 1px;">Email / Username</label>
+                    <input class="auth-input" type="text" id="adminEmail" placeholder="admin or email" required>
                 </div>
                 <div class="form-group" style="margin-bottom: 1.2rem;">
                     <label style="display:block; margin-bottom:0.5rem; color: var(--text-gray); font-size: 0.8rem; letter-spacing: 1px;">Password</label>
@@ -1521,12 +1521,12 @@
         }
 
         function initAdminAuthGate() {
-            if (!auth || !isFirebaseConfigured()) {
-                showAuthGate("Firebase Config is missing! Copy your firebaseConfig from Firebase Console and paste it into the script tag of admin.html.");
-                return;
-            }
-
             showAuthGate();
+
+            if (!auth || !isFirebaseConfigured()) {
+                console.warn("Firebase not configured. Admin functionality will be limited to local/mock data.");
+                showAuthGate("Firebase Config is missing! You can use the local master password (admin123) to enter in 'Offline Mode'.");
+            }
 
             const form = document.getElementById('adminLoginForm');
             if (form) {
@@ -1535,8 +1535,24 @@
                     const btn = form.querySelector('button');
                     const originalText = btn.textContent;
                     
-                    const email = (document.getElementById('adminEmail')?.value || '').trim();
+                    const email = (document.getElementById('adminEmail')?.value || '').trim().toLowerCase();
                     const pass = (document.getElementById('adminPass')?.value || '').trim();
+
+                    // --- OFFLINE / LOCAL BYPASS ---
+                    // This allows you to enter even if Firebase is not configured.
+                    // Master Password: admin123
+                    if (pass === 'admin123' && (email === 'admin' || email === 'admin@bellakraft.com')) {
+                        console.log("Offline Bypass Activated");
+                        hideAuthGate();
+                        bootstrapAdminApp();
+                        showToast("Logged in via Offline Bypass (admin123)");
+                        return;
+                    }
+                    
+                    if (!auth || !isFirebaseConfigured()) {
+                        showAuthGate("Firebase not configured. Use the local master password (admin123) to bypass.");
+                        return;
+                    }
                     
                     try {
                         btn.disabled = true;

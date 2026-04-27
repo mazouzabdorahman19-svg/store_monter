@@ -65,9 +65,16 @@
         </section>
 
         <!-- Category Scroll -->
-        <div class="category-container" id="categoryFilters">
-            <!-- Categories will be injected by script.js -->
-        </div>
+        <section class="category-section">
+            <div class="section-header" style="margin-bottom: 2rem;">
+                <p>Curated Selection</p>
+                <h2>Browse by Brand</h2>
+            </div>
+            <div class="category-container" id="categoryFilters">
+                <!-- Categories will be injected by script.js -->
+            </div>
+        </section>
+
 
         <!-- Collection Section -->
         <section class="collection-section" id="collection">
@@ -137,12 +144,13 @@
             <div class="footer-col">
                 <h4>Collections</h4>
                 <ul>
-                    <li><a href="#">Classic</a></li>
-                    <li><a href="#">Grand Complication</a></li>
-                    <li><a href="#">Jewelry</a></li>
-                    <li><a href="#">Limited Edition</a></li>
+                    <li><a href="#collection" onclick="filterCategory('rolex', null)">Rolex Edition</a></li>
+                    <li><a href="#collection" onclick="filterCategory('ap', null)">Audemars Piguet</a></li>
+                    <li><a href="#collection" onclick="filterCategory('cartier', null)">Cartier Special</a></li>
+                    <li><a href="#collection" onclick="filterCategory('patek', null)">Patek Philippe</a></li>
                 </ul>
             </div>
+
             <div class="footer-col">
                 <h4>Customer Care</h4>
                 <ul>

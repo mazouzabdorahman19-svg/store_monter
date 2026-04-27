@@ -114,7 +114,15 @@ function filterCategory(catId, btn) {
     currentCategory = catId;
     currentPage = 1;
     document.querySelectorAll('.category-tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    
+    if (btn) {
+        btn.classList.add('active');
+    } else {
+        // If called from elsewhere (footer/menu), find the tab and activate it
+        const tab = document.querySelector(`.category-tab[onclick*="'${catId}'"]`);
+        if (tab) tab.classList.add('active');
+    }
+    
     renderProducts();
     
     const collection = document.getElementById('collection');
@@ -122,6 +130,7 @@ function filterCategory(catId, btn) {
         collection.scrollIntoView({ behavior: 'smooth' });
     }
 }
+
 
 function renderProducts() {
     const grid = document.getElementById('productGrid');

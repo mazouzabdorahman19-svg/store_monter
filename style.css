@@ -275,7 +275,13 @@ header.scrolled {
     color: var(--accent-gold);
 }
 
+.category-section {
+    padding: 6rem 5% 2rem;
+    background: var(--bg-darker);
+}
+
 /* Category Tabs - Premium Style (Fixed) */
+
 .category-container {
     padding: 1.5rem 0;
     display: flex;
